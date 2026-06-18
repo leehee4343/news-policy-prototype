@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>뉴스저작물 관리 정책 분석 프로토타입</title>
+<style>
+:root{
+  --blue:#2563eb;--blue-lt:#dbeafe;--blue-md:#93c5fd;--blue-dk:#1d4ed8;
+  --navy:#1e3a5f;--navy2:#162d4a;
+  --green:#16a34a;--green-lt:#e3f9ed;--green-dk:#0d7a3a;
+  --amber:#f5870a;--amber-lt:#fff1e0;--amber-dk:#c2660a;
+  --red:#ef4444;--red-lt:#fdecec;--red-dk:#c0291a;
+  --purple:#7c3aed;--purple-lt:#ede9fe;
+  --bg:#f5f7fa;--bg2:#fff;--text:#1a202c;--text2:#4b5563;--text3:#9ca3af;
+  --border:#e2e8f0;--r:10px;--sh:0 2px 8px rgba(0,0,0,.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:16px;color:var(--text);background:var(--bg);display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.hdr{height:54px;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 18px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+.hdr-l{display:flex;align-items:center;gap:10px;}
+.hdr-ic{width:30px;height:30px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.hdr-title{color:#fff;font-size:15px;font-weight:700;}
+.hdr-sub{color:#93c5fd;font-size:12px;}
+.badge{background:rgba(255,255,255,.15);color:#e0f2fe;font-size:11px;padding:3px 9px;border-radius:20px;margin-left:6px;}
+.lay{display:flex;height:calc(100vh - 54px);}
+.side{width:262px;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;}
+.side::-webkit-scrollbar{width:4px;}
+.side::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.side-lbl{font-size:10px;font-weight:700;color:var(--text3);padding:12px 14px 4px;letter-spacing:.6px;text-transform:uppercase;}
+.sdiv{height:1px;background:var(--border);margin:4px 10px;}
+.nv{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;border-radius:8px;margin:2px 6px;transition:background .12s;}
+.nv:hover{background:var(--blue-lt);}
+.nv.on{background:var(--blue-lt);}
+.nv-ic{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.nv-lbl{font-size:13px;font-weight:500;color:var(--text);flex:1;line-height:1.3;}
+.nv.on .nv-lbl{color:var(--blue-dk);font-weight:700;}
+.nv-no{font-size:10px;color:var(--text3);font-weight:600;flex-shrink:0;}
+.main{flex:1;overflow-y:auto;background:var(--bg);}
+.main::-webkit-scrollbar{width:6px;}
+.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.page{display:none;}
+.page.on{display:block;}
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--blue-dk) 100%);padding:22px 28px 18px;color:#fff;}
+.hero-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);color:#e0f2fe;font-size:11px;padding:3px 10px;border-radius:20px;margin-bottom:8px;}
+.hero h1{font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:5px;}
+.hero p{font-size:13px;color:#93c5fd;line-height:1.6;}
+.hero-tags{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;}
+.htag{background:rgba(255,255,255,.12);color:#e0f2fe;font-size:11px;padding:2px 9px;border-radius:12px;}
+.content{padding:20px 28px 40px;}
+.sec-t{display:flex;align-items:center;gap:8px;margin-bottom:10px;margin-top:22px;}
+.sec-t:first-child{margin-top:0;}
+.sec-t .n{width:24px;height:24px;background:var(--blue);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.sec-t h2{font-size:15px;font-weight:700;}
+.art-block{background:var(--bg2);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px;}
+.art-row{display:flex;align-items:flex-start;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px;line-height:1.75;color:var(--text);}
+.art-row:last-child{border-bottom:none;}
+.art-row b{font-weight:700;color:var(--navy);}
+.art-badge{flex-shrink:0;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px;white-space:nowrap;}
+.art-badge.bl{background:var(--blue-lt);color:var(--blue-dk);}
+.art-badge.gr{background:var(--green-lt);color:var(--green-dk);}
+.art-badge.am{background:var(--amber-lt);color:var(--amber-dk);}
+.art-badge.rd{background:var(--red-lt);color:var(--red-dk);}
+.art-badge.pu{background:var(--purple-lt);color:var(--purple);}
+.tw{overflow-x:auto;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--bg2);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+th{background:var(--navy);color:#fff;padding:8px 12px;text-align:left;font-size:12px;font-weight:600;white-space:nowrap;}
+td{padding:7px 12px;border-bottom:1px solid var(--border);line-height:1.55;vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f0f5ff;}
+td.hl{font-weight:700;color:var(--blue);background:var(--blue-lt);}
+td.gr{color:var(--green-dk);font-weight:600;}
+td.am{color:var(--amber-dk);font-weight:600;}
+td.rd{color:var(--red-dk);font-weight:600;}
+.cmp th,.cmp td{text-align:center;}
+td.lft{text-align:left;font-weight:600;background:var(--blue-lt);color:var(--blue-dk);}
+td.ok{color:var(--green-dk);font-weight:700;}
+td.no{color:var(--red-dk);font-weight:700;}
+.ib{border-left:4px solid var(--blue);background:var(--blue-lt);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--blue-dk);line-height:1.7;}
+.ib.am{background:var(--amber-lt);border-color:var(--amber);color:var(--amber-dk);}
+.ib.rd{background:var(--red-lt);border-color:var(--red);color:var(--red-dk);}
+.ib.gr{background:var(--green-lt);border-color:var(--green);color:var(--green-dk);}
+.ib strong{font-weight:700;}
+.formula{background:#f1f5f9;border-radius:6px;padding:8px 12px;font-family:monospace;font-size:12px;margin:6px 0;color:var(--blue-dk);border-left:3px solid var(--blue);}
+.flow{display:flex;align-items:flex-start;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;}
+.fs{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;min-width:115px;max-width:155px;flex-shrink:0;box-shadow:var(--sh);}
+.fa{color:var(--blue-md);font-size:18px;display:flex;align-items:center;padding:0 4px;flex-shrink:0;padding-top:10px;}
+.fs .fn{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.fs .ft{font-size:12px;font-weight:700;margin-bottom:2px;}
+.fs .fd{font-size:11px;color:var(--text2);line-height:1.5;}
+.fs.gr .fn{color:var(--green);}
+.fs.am .fn{color:var(--amber);}
+.stbar{background:var(--navy2);color:#93c5fd;font-size:11px;padding:6px 22px;display:flex;gap:14px;flex-wrap:wrap;}
+.ovl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;}
+.ovl.on{display:flex;}
+.modal{background:var(--bg2);border-radius:14px;padding:24px;max-width:600px;width:92%;max-height:82vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.22);}
+.modal h2{font-size:16px;font-weight:800;margin-bottom:12px;color:var(--navy);}
+.modal-x{float:right;background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3);}
+.term{margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.term:last-child{border-bottom:none;}
+.term dt{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:2px;}
+.term dd{font-size:12px;color:var(--text2);line-height:1.65;}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="hdr-ic">📰</div>
+    <span class="hdr-title">뉴스저작물 관리 정책 분석 프로토타입</span>
+    <span class="hdr-sub">한국언론진흥재단</span>
+  </div>
+  <div class="hdr-r">
+    <span class="badge">2025.10 기준</span>
+    <span class="badge">121개사 131매체</span>
+  </div>
+</header>
+<div class="lay">
+<aside class="side">
+  <div class="side-lbl">문서 목록 (10종)</div>
+  <div class="nv on" id="nv01" onclick="sp('p01',this)">
+    <div class="nv-ic" style="background:#ede9fe;color:#7c3aed;">⚖️</div>
+    <div class="nv-lbl">저작권법 시행령</div>
+    <div class="nv-no">01</div>
+  </div>
+  <div class="nv" id="nv02" onclick="sp('p02',this)">
+    <div class="nv-ic" style="background:#dbeafe;color:#2563eb;">🛒</div>
+    <div class="nv-lbl">2020 뉴스저작권이용상품안내</div>
+    <div class="nv-no">02</div>
+  </div>
+  <div class="nv" id="nv03" onclick="sp('p03',this)">
+    <div class="nv-ic" style="background:#fff1e0;color:#f5870a;">💰</div>
+    <div class="nv-lbl">사용료 징수규정 개정안 전문</div>
+    <div class="nv-no">03</div>
+  </div>
+  <div class="nv" id="nv031" onclick="sp('p031',this)">
+    <div class="nv-ic" style="background:#fdecec;color:#ef4444;">🔄</div>
+    <div class="nv-lbl">징수규정 신구조문대비표</div>
+    <div class="nv-no">03-1</div>
+  </div>
+  <div class="nv" id="nv04" onclick="sp('p04',this)">
+    <div class="nv-ic" style="background:#e3f9ed;color:#16a34a;">📋</div>
+    <div class="nv-lbl">뉴스저작물 이용 안내</div>
+    <div class="nv-no">04</div>
+  </div>
+  <div class="nv" id="nv05" onclick="sp('p05',this)">
+    <div class="nv-ic" style="background:#fff1e0;color:#f5870a;">🏛️</div>
+    <div class="nv-lbl">공공부문 이용계약 안내</div>
+    <div class="nv-no">05</div>
+  </div>
+  <div class="nv" id="nv06" onclick="sp('p06',this)">
+    <div class="nv-ic" style="background:#dbeafe;color:#2563eb;">📄</div>
+    <div class="nv-lbl">뉴스저작물 이용계약약관</div>
+    <div class="nv-no">06</div>
+  </div>
+  <div class="nv" id="nv07" onclick="sp('p07',this)">
+    <div class="nv-ic" style="background:#fdecec;color:#ef4444;">🤝</div>
+    <div class="nv-lbl">뉴스저작물 신탁계약약관</div>
+    <div class="nv-no">07</div>
+  </div>
+  <div class="nv" id="nv08" onclick="sp('p08',this)">
+    <div class="nv-ic" style="background:#ede9fe;color:#7c3aed;">📊</div>
+    <div class="nv-lbl">뉴스저작물 관리수수료규정</div>
+    <div class="nv-no">08</div>
+  </div>
+  <div class="nv" id="nv09" onclick="sp('p09',this)">
+    <div class="nv-ic" style="background:#e3f9ed;color:#16a34a;">📤</div>
+    <div class="nv-lbl">뉴스저작물 사용료분배규정</div>
+    <div class="nv-no">09</div>
+  </div>
+  <div class="sdiv"></div>
+  <div class="nv" onclick="openTerms()">
+    <div class="nv-ic" style="background:#f5f7fa;color:#9ca3af;">📚</div>
+    <div class="nv-lbl" style="color:var(--text2);font-size:12px;">용어 사전</div>
+  </div>
+</aside>
+<main class="main" id="mainArea">
+<div class="page on" id="p01Page">
+<div class="hero">
+  <div class="hero-chip">⚖️ 문서 01</div>
+  <h1>저작권법 시행령</h1>
+  <p>[시행 2022.3.8.] [대통령령 제32528호] | 문화체육관광부 저작권정책과 044-203-2476 | 전체 77개 조문</p>
+  <div class="hero-tags"><span class="htag">제1조~제77조</span><span class="htag">보상금수령단체</span><span class="htag">저작권등록</span><span class="htag">신탁관리업 허가·사용료승인</span><span class="htag">불법복제 조치</span></div>
+</div>
+<div class="content">
+
+<div class="sec-t"><div class="n">1</div><h2>제1조~제1조의3 목적·저작권 보호 시책·공공저작물 이용활성화</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제1조</span><div><b>목적</b>: 「저작권법」에서 위임된 사항과 그 시행에 필요한 사항을 정함</div></div>
+<div class="art-row"><span class="art-badge bl">제1조의2</span><div><b>저작권 보호를 위한 시책 수립</b><br>
+① 저작권 인식 확산을 위한 교육·홍보 시책에 포함해야 할 사항: ①전문 인력 양성 ②청소년 교육 ③올바른 이용 홍보 ④그 밖에 장관이 필요하다고 인정하는 사항<br>
+② 권리관리정보 및 기술적 보호조치 시책에 포함해야 할 사항: ①통합적 관리 표준체계 개발 ②권리관리정보 제거·변경 금지 예외사유 ③기술적 보호조치 표준화 ④무력화 금지 예외사유 ⑤그 밖에 장관이 필요하다고 인정하는 사항<br>
+③ 시책 수립 전 관련 업계·이해관계자 의견 수렴 + 관계 중앙행정기관과 협의 필수<br>
+④ 시책 수립 후 문화체육관광부 인터넷 홈페이지에 게시</div></div>
+<div class="art-row"><span class="art-badge bl">제1조의3</span><div><b>공공저작물 이용활성화 시책</b><br>
+① 시책에 포함해야 할 사항: 자유이용 공공저작물 확대 방안 / 권리 귀속 명확화 / 민간 활용 촉진 / 교육·훈련·홍보 / 표시 기준 적용 / 관련 제도 정비 / 그 밖에 필요한 사항<br>
+② 중앙관서의 장 등 또는 지자체장은 국민의 자유로운 이용이 필요한 공공저작물에 대해 사용·수익허가나 대부계약 체결 없이 자유롭게 사용 가능</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">2</div><h2>제2조~제8조의2 보상금수령단체</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge gr">제2조</span><div><b>복제·공연 등 내역 제출</b>: 법 제25조에 따라 공표된 저작물 이용 시 보상금수령단체에 복제·배포·공연·전시·공중송신 내역 제출 + 보상금 지급</div></div>
+<div class="art-row"><span class="art-badge gr">제3조</span><div><b>보상금수령단체 지정</b>: 문화체육관광부장관이 법 제25조 제7항 요건 갖춘 단체 중 의결권 평등·민주적 운영 단체 지정 → 지정 후 관보 고시</div></div>
+<div class="art-row"><span class="art-badge gr">제4조</span><div><b>보상 관계 업무 규정</b>: 보상금수령단체는 ①징수 방법·절차 ②분배 ③수수료 ④관리에 관한 업무규정을 정하여 문화체육관광부장관 승인 필수 (변경 시 동일)</div></div>
+<div class="art-row"><span class="art-badge gr">제5조</span><div><b>회계</b>: 보상금 회계를 다른 회계와 구분 처리</div></div>
+<div class="art-row"><span class="art-badge gr">제6조</span><div><b>지정 취소</b>: 취소 전 청문 실시 → 취소 후 관보 고시</div></div>
+<div class="art-row"><span class="art-badge gr">제7조</span><div><b>보상금 분배 공고</b>: 일반일간신문 + 보상금수령단체·문화체육관광부 홈페이지(1개월 이상)에 ①지급 근거 ②지급 기준·대상 ③지급 방법 ④지급 기한·미분배 처리 방법 ⑤담당자·연락처 공고</div></div>
+<div class="art-row"><span class="art-badge gr">제8조</span><div><b>미분배 보상금의 사용 승인</b>: 문화체육관광부장관에 ①공고일 ②승인신청 금액 ③사용 목적 ④사용 계획 ⑤신청 일시 제출. 사용 후 6개월 이내 사용보고서 제출</div></div>
+<div class="art-row"><span class="art-badge gr">제8조의2</span><div><b>미분배 보상금 적립비율</b>: 미분배 보상금의 5% 이상 30% 이하 범위에서 장관이 고시하는 비율로 적립 (①추후 분배 실적 ②적립 현황 고려)</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">3</div><h2>제9조~제16조의6 교육·도서관·장애인·문화시설 관련</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge am">제9조</span><div><b>교육기관의 복제방지조치</b>: ①수업 받는 자 외 이용·복제 불가 기술적 조치 ②저작권 보호 경고문구 표시 ③보상금 산정을 위한 장치 설치</div></div>
+<div class="art-row"><span class="art-badge am">제10조</span><div><b>정당한 범위 등의 기준</b>: 장관은 법 제28조에 따른 정당한 범위와 공정한 관행 지침을 정하여 고시 가능</div></div>
+<div class="art-row"><span class="art-badge am">제11조</span><div><b>공연 예외</b>: 법 제29조 제2항 단서에서 정한 공연 예외 장소: 식품위생법상 영업소(커피전문점·일반음식점·단란주점 등), 경마장·경륜장, 전문체육시설·골프장·스키장, 항공기·선박·열차, 호텔·카지노·유원시설, 대규모점포, 숙박업·목욕장(영상), 청사·공연장·박물관 등(발행 6개월 미경과 영상)</div></div>
+<div class="art-row"><span class="art-badge am">제12조</span><div><b>복제할 수 있는 시설</b>: 법 제31조의 시설 = 도서관법상 국립중앙도서관·공공·대학·학교·전문도서관(비영리), 국가·지자체·비영리 법인이 설치한 자료 보존·대출 시설</div></div>
+<div class="art-row"><span class="art-badge am">제13조</span><div><b>도서관 복제방지조치</b>: ①열람 외 이용 불가 복제방지조치 ②이용자 외 접근제한조치 ③열람 외 이용·변경 확인조치 ④판매용 전자기록매체 이용 방지장치 ⑤직원 교육 ⑥경고표지 부착 ⑦보상금 산정 장치 설치</div></div>
+<div class="art-row"><span class="art-badge am">제14조~제15조의3</span><div><b>시각·청각장애인 관련</b>: 복제 허용 시각장애인 시설(장애인복지시설·특수학교·국가지자체 운영 시설). 전용 기록방식(점자 전자기록·음성변환·디지털음성·기술조치 적용 기록). 청각장애인 시설·범위 별도 규정</div></div>
+<div class="art-row"><span class="art-badge am">제16조~제16조의6</span><div><b>문화시설·공공저작물 이용</b>: 문화시설 범위(국회도서관·국립중앙도서관·국립중앙박물관 등). 상당한 조사 기준(8가지 조건 모두 충족). 보상금 결정 신청 시 2개월 이내 결정(1회 연장 가능). 저작물 관련 정보 홈페이지 게시 의무 + 복제방지조치 의무</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">4</div><h2>제18조~제23조의4 저작재산권자 불명 저작물 이용·보상금 공탁</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제18조</span><div><b>상당한 노력의 기준</b> (법 제50조): 다음 4가지 모두 충족 필요<br>
+① 저작권등록부 열람·사본 교부 신청으로 저작재산권자·거소 조회<br>
+② 저작권신탁관리업자 또는 대리중개업자·이용자 2명 이상에 확정일자 문서 발송 후 1개월 내 불명 회신 또는 회신 없음<br>
+③ 일반일간신문 또는 권리자찾기 정보시스템에 공고 후 10일 경과<br>
+④ 국내 정보통신망 검색도구로 저작재산권자·거소 검색</div></div>
+<div class="art-row"><span class="art-badge bl">제19조~제22조</span><div><b>저작물 이용 승인신청·통지·기각</b>: 승인신청서 장관에 제출 → 10일간 권리자찾기 시스템 공고 또는 7~30일 의견제출 기회 부여 → 승인 시 신청인·저작재산권자에 통지 + 1개월 이상 게시 → 기각 사유(요건 미달·저작재산권자 확인·복제물 회수·대체 가능 등) 발생 시 사유 명시 통지</div></div>
+<div class="art-row"><span class="art-badge bl">제23조의2</span><div><b>보상금 청구 절차</b>: 청구서에 ①저작권 등록증 사본 또는 ②성명 표시 저작물 사본 첨부하여 한국저작권위원회 제출. 2건 이상은 일괄 청구 가능. 위원회는 즉시 권리자 여부 조사</div></div>
+<div class="art-row"><span class="art-badge bl">제23조의4</span><div><b>보상금 공탁</b>: 공탁 가능 경우 ①저작재산권자가 수령 거부·불가 ②질권 설정(승낙 없는 경우). 공탁소: 국내 주소→해당 주소지 관할, 그 외→공탁자 주소지. 공탁 후 수령인에게 통지 의무</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">5</div><h2>제24조~제35조 저작권 등록</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge gr">제24조</span><div><b>등록 사항</b>: ①2차적저작물의 원저작물 제호·저작자 ②저작물 공표 매체 정보 ③등록권리자 2명 이상인 경우 각자 지분</div></div>
+<div class="art-row"><span class="art-badge gr">제25조~제26조</span><div><b>신청주의·등록신청</b>: 신청 또는 촉탁이 있어야 등록. 원칙적으로 등록권리자+등록의무자 공동 신청. 예외(승낙서 첨부·판결·상속·일반승계·촉탁·신탁관리업자·명의 변경)는 단독 신청 가능</div></div>
+<div class="art-row"><span class="art-badge gr">제27조~제30조</span><div><b>저작권등록부 기재·공보·열람·변경</b>: 기재 사항 ①등록번호 ②저작물 제호 ③저작자 성명 ④창작·공표·발행 연월일 ⑤등록권리자 성명·주소 ⑥등록 내용. 등록공보 2개월에 1회 이상 발행 또는 홈페이지 게시. 반려 시 사유 명시 서면 통지. 변경등록 신청 시 증명 서류 첨부</div></div>
+<div class="art-row"><span class="art-badge gr">제35조</span><div><b>전산정보처리시스템에 의한 등록</b>: 제24조~제30조 등록 및 관련 업무는 전산정보처리시스템으로 처리 가능</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">6</div><h2>제36조~제37조 인증기관</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge pu">제36조</span><div><b>인증기관 지정</b>: 가능 기관 ①한국저작권위원회 ②저작권신탁관리업자 ③장관이 인정하는 법인·단체. 지정 요건: ①손해 배상 능력 ②등록정보 관리·인증서 생성·발급 설비 ③보호 설비. 신청 서류: 지정신청서+요건 증명서류+인증업무규정(인증 종류·기준·방법·절차·이용 조건). 취소 사유: ①요건 미달 ②업무규정 위반 ③1년 이상 인증 미수행 → 취소 후 관보 고시</div></div>
+<div class="art-row"><span class="art-badge pu">제37조</span><div><b>인증 절차</b>: 인증신청서 제출 → 인증기관이 정당 권리자 여부 확인 → 인증서 발급 → 인증 범위·유효기간 등 인증표시 가능. 전산정보처리시스템으로 처리 가능. 세부사항은 장관 고시</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">7</div><h2>제40조~제46조의2 복제·전송 중단·재개 및 기술조치</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge rd">제40조</span><div><b>복제·전송 중단 요청</b>: 권리주장자는 ①등록증 사본 또는 ②성명 표시 저작물 사본 등 소명자료 첨부하여 온라인서비스제공자에 제출. 저작권신탁관리업자이거나 1년 내 이미 소명자료 제출한 경우 요청서만으로 가능. 정당한 권리 없이 중단 요구 시 손해배상 책임</div></div>
+<div class="art-row"><span class="art-badge rd">제41조</span><div><b>복제·전송 중단 통보</b>: 중단 후 <b>3일 이내</b> 권리주장자 및 복제·전송자에 통보. 통보 시 재개 요구 가능성 안내 의무</div></div>
+<div class="art-row"><span class="art-badge rd">제42조</span><div><b>복제·전송 재개 요청</b>: 복제·전송자는 중단 통보받은 날부터 <b>30일 이내</b>에 ①등록증 사본 ②성명 표시 저작물 사본 ③이용허락 계약서 사본 ④보호기간 종료 확인 자료 등 첨부하여 재개 요청</div></div>
+<div class="art-row"><span class="art-badge rd">제43조</span><div><b>재개통보</b>: 재개 요구받은 날부터 <b>3일 이내</b>에 정당성 결정. 정당한 경우 재개예정일(요구받은 날의 7일~14일 이내)을 권리주장자에게 통보</div></div>
+<div class="art-row"><span class="art-badge rd">제44조~제44조의4</span><div><b>수령인 지정·복제·전송자 정보 제공 청구</b>: 수령인 정보(성명·소속·전화·팩스·이메일·주소) 홈페이지 표시 의무. 청구 가능 정보: 성명·주소·전화번호·이메일. 저작권보호심의위원회 1개월 이내 심의(1회 연장 가능). 장관 명령 후 서비스제공자 7일 이내 제출</div></div>
+<div class="art-row"><span class="art-badge rd">제45조~제46조의2</span><div><b>불법 전송 차단 기술조치</b>: 3가지 조치 ①저작물 인식 기술조치 ②검색제한·송신제한조치 ③경고문구 발송. ①②는 요청 즉시 이행 의무. 이행 여부 확인은 한국저작권보호원에 위탁</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">8</div><h2>제47조~제55조 저작권신탁관리업 허가·사용료 승인·과징금</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제47조</span><div><b>저작권신탁관리업 허가신청</b>: 허가신청서 + 업무규정(①저작권 신탁계약 약관 ②저작물 이용계약 약관) 장관에 제출. 허가 시 허가증 발급</div></div>
+<div class="art-row"><span class="art-badge bl">제49조</span><div><b>사용료 등의 승인신청 및 승인절차</b>:
+① 신탁관리업자 → 장관에 서면 승인신청<br>
+② 장관은 문화체육관광부 홈페이지에 <b>14일 이상</b> 공고 + 이해관계인 의견 수렴<br>
+③ 의견 있는 자는 공고기간 내 서면 제출 가능<br>
+④ 장관은 필요시 권리자·이용자·전문가 의견 청취 가능<br>
+⑤ 장관은 의견 첨부하여 한국저작권위원회에 심의 요청<br>
+⑥ 위원회는 요청일로부터 <b>2개월 이내</b> 심의 (2개월 범위에서 1회 연장 가능)<br>
+⑦ 승인 후 장관이 홈페이지 공고</div></div>
+<div class="art-row"><span class="art-badge bl">제50조</span><div><b>관리 저작물 목록 작성</b>: 기재 사항 ①저작물 제호 ②저작자·실연자·음반제작자·방송사업자·데이터베이스제작자 성명 등 ③창작·공표·실연·고정·제작 연도</div></div>
+<div class="art-row"><span class="art-badge bl">제51조의2</span><div><b>통합 징수</b>: 장관의 통합 징수 요구는 업종·주체·대상·기간·주기를 구체적으로 적은 서면으로. 징수 주기마다 징수 종료 후 <b>60일 이내</b>에 ①총징수액 및 단체별 징수액 ②세부내역 ③산출근거 ④지급금액을 신탁관리업자·보상금수령단체에 통지</div></div>
+<div class="art-row"><span class="art-badge bl">제51조의3</span><div><b>운영의 공개</b>: 사업연도 종료 후 <b>3개월 이내</b>에 사무소 비치 + 홈페이지 공개 (상근임원 보수·징수분배 현황·미분배금 현황·예산 집행·결산서·임원 현황·이사회 회의록 등)</div></div>
+<div class="art-row"><span class="art-badge bl">제52조</span><div><b>보고</b>: 신탁관리업자는 매년 전년도 사업실적+당해연도 사업계획 보고. 매월 말일 기준으로 ①관리 저작물 목록 ②권리 정보 ③연락처를 다음달 10일까지 보고</div></div>
+<div class="art-row"><span class="art-badge bl">제53조~제55조</span><div><b>업무정지·과징금</b>: 업무정지 세부기준은 별표 2. 과징금 부과 시 서면 통지 → 통지받은 날부터 <b>20일 이내</b> 납부 (천재지변 등 사유 소멸 후 7일 이내). 장관은 매년 10월 31일까지 과징금 운용계획 수립·시행. 부과기준은 별표 3</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">9</div><h2>제56조~제65조 한국저작권위원회 운영</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge gr">제56조~제58조</span><div><b>위원장·부위원장·위원 대우</b>: 위원장=대표·업무 총괄. 회의는 재적위원 과반수 출석으로 개의, 출석위원 2/3 이상 찬성으로 의결. 위원장 제외 비상근. 상근위원에 보수, 비상근위원에 실비 지급 가능. 상근위원은 영리업무 금지</div></div>
+<div class="art-row"><span class="art-badge gr">제57조의2~제57조의3</span><div><b>위원 제척·기피·회피·해촉</b>: 제척 사유 ①당사자이거나 공동권리·의무자 ②당사자와 친족 ③해당 안건에 증언·진술·자문·연구·감정 ④대리인이거나 대리인이었던 경우 ⑤당사자의 임원·직원 재직 ⑥해당 안건 처분·부작위에 관여. 기피 신청 시 의결로 결정. 해촉 사유: 심신장애·직무태만·품위손상·제척 사유 해당에도 회피하지 않은 경우</div></div>
+<div class="art-row"><span class="art-badge gr">제59조~제65조</span><div><b>분과위원회·알선·조정·감정·조직</b>: 조정부는 3명(500만원 이하 1명). 조정신청서 제출 + 비용 미리 납부. 조정기간 3개월 이내(1개월 1회 연장). 감정기간은 조정기간 미산입. 출석요구 7일 전 서면 통지. 조정 불성립 사유: 기간 경과·합의 미성립·이의신청</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">10</div><h2>제66조~제77조 저작권정보센터·불법복제 조치·공익사업·과태료</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge am">제66조</span><div><b>저작권정보센터</b>: 저작권거래소 + 기술위원회 설치 가능. 업무: ①권리관리정보 통합관리체계 구축·운영 ②통합저작권번호체계 개발·관리·보급 ③기술적 보호조치 표준화 연구 ④표준 평가 도구 개발 ⑤저작권 정보기술 조사·연구</div></div>
+<div class="art-row"><span class="art-badge am">제67조</span><div><b>예산 및 결산</b>: 위원회 및 보호원은 사업연도 종료 전까지 다음연도 사업계획서·예산안 장관에 제출 및 승인. 종료 후 60일 이내 사업실적서·결산서 제출</div></div>
+<div class="art-row"><span class="art-badge am">제67조의2~제67조의5</span><div><b>저작권보호심의위원회</b>: 재적위원 과반수 출석·출석위원 2/3 이상 찬성으로 의결. 제척·기피·회피 동일 적용. 해촉 사유에 "직무 관련 비위", "스스로 곤란 의사 표시" 추가</div></div>
+<div class="art-row"><span class="art-badge am">제68조</span><div><b>업무의 위탁</b>: 장관이 한국저작권위원회에 위탁하는 업무: ①보상금 결정 신청 접수·결정·통보 ②저작물 이용 승인·보상금 기준 결정 ③권리자 찾기 사업 및 정보시스템 구축·운영 ④저작재산권자 찾기 노력 이행 ⑤저작권위탁관리업자 보고사항 접수·처리</div></div>
+<div class="art-row"><span class="art-badge am">제69조~제72조의6</span><div><b>수거·폐기·삭제·명령·시정권고</b>: 수거 후 당사자 이의 없으면 3개월 후 폐기 가능(기술적 보호조치 무력화 기기는 6개월). 불법복제물 삭제명령 심의: 1호·2호 7일 이내, 3호 14일 이내(2회 연장). 계정 정지 기간: 1차 1개월 미만, 2차 1~3개월 미만, 3차 이상 3~6개월. 게시판 서비스 정지 기간도 동일</div></div>
+<div class="art-row"><span class="art-badge am">제73조~제77조</span><div><b>공정한 이용·기증·과태료</b>: 공정한 이용을 위한 사업 7가지(보호기간 종료 저작물 정보제공·공공저작물 공동활용·표준계약서 개발·공정이용기준 지침·이용허락표시제도·권리자 찾기 등). 저작재산권 기증: 장관에 기증서약서 제출→관리대장 기재·홈페이지 게시→관리단체 지정. 규제 재검토(제16조의2 5년마다, 제38조 3년마다). 과태료 부과기준은 별표 4·5</div></div>
+</div>
+
+</div>
+</div>
+<!-- PAGE 02 -->
+<div class="page" id="p02Page">
+<div class="hero">
+  <div class="hero-chip">🛒 문서 02</div>
+  <h1>2020년 뉴스저작권 이용 상품 안내</h1>
+  <p>한국언론진흥재단 뉴스저작권 상품 전체 목록 및 요율 | 2020년 기준 | 96개사 105개 매체 (2019.11)</p>
+  <div class="hero-tags"><span class="htag">스크랩 라이선스</span><span class="htag">클리핑·벌크</span><span class="htag">기사 단건·보도사진</span><span class="htag">키오스크·e-NIE</span></div>
+</div>
+<div class="content">
+
+<div class="sec-t"><div class="n">1</div><h2>신문 스크랩 라이선스 (매체당 월 이용료, 부가세 포함)</h2></div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>임직원 수(정원)</th><th>내부라이선스 (내부직원용)</th><th>통합라이선스 (내부+외부홍보)</th></tr></thead>
+<tbody>
+<tr><td class="hl">1그룹</td><td>3천명 이상</td><td>275,000원</td><td>440,000원</td></tr>
+<tr><td class="hl">2그룹</td><td>2천명 이상~3천명 미만</td><td>220,000원</td><td>385,000원</td></tr>
+<tr><td class="hl">3그룹</td><td>1천명 이상~2천명 미만</td><td>165,000원</td><td>330,000원</td></tr>
+<tr><td class="hl">4그룹</td><td>5백명 이상~1천명 미만</td><td>121,000원</td><td>231,000원</td></tr>
+<tr><td class="hl">5그룹</td><td>1백명 이상~5백명 미만</td><td>88,000원</td><td>198,000원</td></tr>
+<tr><td class="hl">6그룹</td><td>1백명 미만</td><td>55,000원</td><td>165,000원</td></tr>
+</tbody>
+</table></div>
+<div class="ib">※ 정부부처(청)·헌법기관은 1그룹 적용. 그 외 공공부문은 임직원 정원에 따라 차등.<br>
+※ 기업체 등 민간부문은 노동관계법상 상시근로자+임원 합산 수에 따라 차등.<br>
+※ 전자스크랩 프로그램 ID 2개 기본 제공 (추가 ID 1개당 22,000원)<br>
+※ 라이선스 상품은 영리적·상업적 용도로 이용 불가 (필요 시 별도 협의)</div>
+<div class="tw"><table class="cmp">
+<thead><tr><th>이용방법</th><th>내부라이선스</th><th>통합라이선스</th></tr></thead>
+<tbody>
+<tr><td class="lft">전자스크랩</td><td class="ok">○</td><td class="ok">○</td></tr>
+<tr><td class="lft">내부전산망</td><td class="ok">○</td><td class="ok">○</td></tr>
+<tr><td class="lft">모바일</td><td class="ok">○</td><td class="ok">○</td></tr>
+<tr><td class="lft">홈페이지</td><td class="no">×</td><td class="ok">○</td></tr>
+<tr><td class="lft">대외발송</td><td class="no">×</td><td class="ok">○</td></tr>
+</tbody>
+</table></div>
+
+<div class="sec-t" style="margin-top:18px;"><div class="n">2</div><h2>온라인뉴스 스크랩 라이선스</h2></div>
+<div class="ib">신문지면 기사를 제외한 온라인뉴스 이용 상품. 신문 스크랩 상품과 함께 구매 시 <strong>50% 할인</strong>. 매체당 월 이용료는 신문 스크랩 라이선스와 동일한 그룹별 요율 적용.</div>
+
+<div class="sec-t" style="margin-top:18px;"><div class="n">3</div><h2>방송뉴스 스크랩 라이선스 (매체당 월 이용료, 부가세 포함)</h2></div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>임직원 수</th><th>내부(기본)</th><th>통합(기본)</th><th>내부라이선스Ⅱ (영상포함)</th><th>통합라이선스Ⅱ (영상포함)</th></tr></thead>
+<tbody>
+<tr><td class="hl">1그룹</td><td>3천명 이상</td><td>275,000</td><td>440,000</td><td>605,000</td><td>770,000</td></tr>
+<tr><td class="hl">2그룹</td><td>2천~3천명</td><td>220,000</td><td>385,000</td><td>550,000</td><td>715,000</td></tr>
+<tr><td class="hl">3그룹</td><td>1천~2천명</td><td>165,000</td><td>330,000</td><td>495,000</td><td>660,000</td></tr>
+<tr><td class="hl">4그룹</td><td>5백~1천명</td><td>121,000</td><td>231,000</td><td>451,000</td><td>561,000</td></tr>
+<tr><td class="hl">5그룹</td><td>1백~5백명</td><td>88,000</td><td>198,000</td><td>418,000</td><td>528,000</td></tr>
+<tr><td class="hl">6그룹</td><td>1백명 미만</td><td>55,000</td><td>165,000</td><td>385,000</td><td>495,000</td></tr>
+</tbody>
+</table></div>
+<div class="tw"><table class="cmp">
+<thead><tr><th>제공 및 이용범위</th><th>내부(기본)</th><th>통합(기본)</th><th>내부Ⅱ</th><th>통합Ⅱ</th></tr></thead>
+<tbody>
+<tr><td class="lft">방송뉴스 텍스트·링크 제공</td><td class="ok">○</td><td class="ok">○</td><td class="ok">○</td><td class="ok">○</td></tr>
+<tr><td class="lft">전자스크랩+내부전산망+모바일</td><td class="ok">○</td><td class="ok">○</td><td class="ok">○</td><td class="ok">○</td></tr>
+<tr><td class="lft">홈페이지 게재+대외발송</td><td class="no">×</td><td class="ok">○</td><td class="no">×</td><td class="ok">○</td></tr>
+<tr><td class="lft">방송뉴스 영상 제공 [월 10건 이내]</td><td class="no">×</td><td class="no">×</td><td class="ok">○</td><td class="ok">○</td></tr>
+<tr><td class="lft">기관 내 모니터 뉴스영상 송출 [월 10건]</td><td class="no">×</td><td class="no">×</td><td class="ok">○</td><td class="ok">○</td></tr>
+</tbody>
+</table></div>
+<div class="ib am"><strong>추가 서비스(라이선스Ⅱ) 영상뉴스 이용 조건</strong><br>
+• 이용 건수: 매체당 월 10건 / 10건 초과 시 별도 비용 발생<br>
+• 노출 범위: 사옥 및 사업장 등 옥내 모니터<br>
+• 사용 제한: 영상파일 무단 유포·재배포 금지(스트리밍 방식 게시는 가능), 이용기관 업무에 직접 연관된 뉴스만 이용, 특정 상품 광고·타 단체 비방·기사 비판·반박 목적 이용 금지<br>
+• 편집: 이용계약 시 설정한 목적 외 무단 편집 불가</div>
+
+<div class="sec-t" style="margin-top:18px;"><div class="n">4</div><h2>B2B 라이선스 (기업체 전용 / 공공부문 제외)</h2></div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>스크랩(전자스크랩)</th><th>내부라이선스 (내부직원용)</th><th>통합라이선스 (내부+외부홍보)</th></tr></thead>
+<tbody>
+<tr><td class="hl">1그룹 대기업</td><td>27,500</td><td>154,000</td><td>319,000</td></tr>
+<tr><td class="hl">2그룹 중견기업</td><td>27,500</td><td>132,000</td><td>297,000</td></tr>
+<tr><td class="hl">3그룹 중소기업</td><td>27,500</td><td>110,000</td><td>275,000</td></tr>
+<tr><td class="hl">4그룹 소기업</td><td>27,500</td><td>88,000</td><td>253,000</td></tr>
+<tr><td class="hl">5그룹 소상공인</td><td>27,500</td><td>66,000</td><td>231,000</td></tr>
+</tbody>
+</table></div>
+<div class="ib">※ 구분은 중소벤처기업부 기업 분류 등에 따름. 전자스크랩 ID 2개 기본 제공 (추가 1개당 22,000원). 영리·상업적 용도 불가.</div>
+
+<div class="sec-t" style="margin-top:18px;"><div class="n">5</div><h2>클리핑 (특정 키워드 포함 뉴스 제공 서비스 / 월 이용료, 부가세 포함)</h2></div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>임직원 수</th><th>웹(Web) 서비스</th><th>앱(App) 서비스</th></tr></thead>
+<tbody>
+<tr><td class="hl">1그룹</td><td>3천명 이상</td><td>1,496,000</td><td>1,496,000</td></tr>
+<tr><td class="hl">2그룹</td><td>2천~3천명</td><td>1,298,000</td><td>1,298,000</td></tr>
+<tr><td class="hl">3그룹</td><td>1천~2천명</td><td>1,122,000</td><td>1,122,000</td></tr>
+<tr><td class="hl">4그룹</td><td>5백~1천명</td><td>781,000</td><td>781,000</td></tr>
+<tr><td class="hl">5그룹</td><td>1백~5백명</td><td>671,000</td><td>671,000</td></tr>
+<tr><td class="hl">6그룹</td><td>1백명 미만</td><td>561,000</td><td>561,000</td></tr>
+</tbody>
+</table></div>
+<div class="ib">웹 이용권한: 내부전산망+홈페이지+대외발송 / 앱: 애플리케이션. 전송방식: FTP 전송 또는 텍스트 파일 제공. 키워드 10개 기준, 초과 시 추가 이용료 발생. 웹+앱 동시 구매 시 50% 할인. 영리·상업적 용도 불가.</div>
+
+<div class="sec-t" style="margin-top:18px;"><div class="n">6</div><h2>벌크 (선택한 언론사의 기사 전체 DB 제공 / 월 이용료, 부가세 포함)</h2></div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>선택 매체 수</th><th>이용권한</th><th>가격</th></tr></thead>
+<tbody>
+<tr><td class="hl">1그룹</td><td>51개 이상</td><td rowspan="6" style="vertical-align:middle;">내부전산망+홈페이지+대외발송</td><td>9,900,000</td></tr>
+<tr><td class="hl">2그룹</td><td>41~50개</td><td>8,800,000</td></tr>
+<tr><td class="hl">3그룹</td><td>31~40개</td><td>7,700,000</td></tr>
+<tr><td class="hl">4그룹</td><td>21~30개</td><td>6,600,000</td></tr>
+<tr><td class="hl">5그룹</td><td>11~20개</td><td>5,500,000</td></tr>
+<tr><td class="hl">6그룹</td><td>~10개</td><td>4,400,000</td></tr>
+</tbody>
+</table></div>
+<div class="ib">FTP 전송 또는 텍스트 파일 제공. 영리·상업적 용도 불가.</div>
+
+<div class="sec-t" style="margin-top:18px;"><div class="n">7</div><h2>스크랩 대행 (라이선스 플러스) · 홍보대행사용</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge am">라이선스플러스</span><div>신문·방송뉴스 라이선스 상품에 '스크랩 대행 용역'이 추가된 상품. <strong>라이선스 상품 가격 + 매체당 용역비 월 110,000원 가산</strong></div></div>
+<div class="art-row"><span class="art-badge am">홍보대행사용</span><div>홍보대행사가 고객사에 뉴스 스크랩을 제공할 수 있도록 허락하는 상품.<br>
+이용료: <strong>매체당 월 이용료 27,500원 × 고객(제공처) 수</strong><br>
+• 상품 이용 고객사는 해당 매체별로 라이선스 상품을 별도 구매해야 함<br>
+• 계약서에 뉴스 스크랩을 제공할 고객명 명시 필수<br>
+• 직접 링크로 뉴스를 제공하는 경우에도 이 상품 구매 필요<br>
+• 지면기사와 온라인뉴스 스크랩 함께 구매 시 50% 할인</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:18px;"><div class="n">8</div><h2>기타 상품 (기사 단건·e-NIE·보도사진·키오스크)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">기사 단건 — 인쇄</span><div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>5천부 미만</th><th>5천부~1만부</th><th>1만부~5만부</th><th>5만부 이상</th></tr></thead>
+<tbody>
+<tr><td class="hl">출판용</td><td>150,000</td><td>350,000</td><td>600,000</td><td>1,000,000</td></tr>
+<tr><td class="hl">광고용</td><td>300,000</td><td>700,000</td><td>1,200,000</td><td>2,000,000</td></tr>
+</tbody>
+</table></div>
+</div></div>
+<div class="art-row"><span class="art-badge bl">기사 단건 — 웹·모바일 게시 (건당 이용료, 원)</span><div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>1년</th><th>2년</th><th>3년</th><th>4년 이상</th></tr></thead>
+<tbody>
+<tr><td class="hl">비상업용</td><td>150,000</td><td>300,000</td><td>450,000</td><td>600,000</td></tr>
+<tr><td class="hl">상업용</td><td>300,000</td><td>600,000</td><td>900,000</td><td>1,200,000</td></tr>
+</tbody>
+</table></div>
+</div></div>
+<div class="art-row"><span class="art-badge gr">e-NIE (온라인 뉴스활용교육 프로그램)</span><div>이용범위: 초·중·고에서 NIE 시 이용하는 교육용 프로그램. <strong>이용료: 학교당 연간 200만원(부가세 포함)</strong>. 이용매체: 45개 매체, 학교 또는 교육청에서 선택. 판매처: 한국언론진흥재단 02-2001-7792</div></div>
+<div class="art-row"><span class="art-badge gr">보도사진 (건당 이용료, 원 / 광고용은 별도 문의)</span><div>
+서적·잡지·단행본·신문 기사 등: 표지 110,000 / 내지 66,000<br>
+인터넷신문·모바일기사·웹진 등: 메인 110,000 / 서브 66,000</div></div>
+<div class="art-row"><span class="art-badge am">키오스크</span><div>이용범위: 도서관 등 공공장소에 설치된 키오스크(대형화면)에 뉴스를 열람할 수 있도록 제공.<br>
+<strong>이용료: 매체당 월 55,000원</strong> (10개 매체 패키지 구매 시 매체당 27,500원, 부가세 포함)</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:18px;"><div class="n">9</div><h2>상품별 판매처 및 연락처</h2></div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>상품명</th><th>판매처</th><th>연락처</th></tr></thead>
+<tbody>
+<tr><td class="hl" rowspan="2">유통대행사</td><td>스크랩·클리핑·벌크·키오스크</td><td>(주)다하미커뮤니케이션즈</td><td>02-593-4174</td></tr>
+<tr><td>스크랩·클리핑·벌크·키오스크</td><td>비플라이소프트(주)</td><td>02-3487-0215</td></tr>
+<tr><td class="hl">전문</td><td>보도사진</td><td>(주)이미지클릭</td><td>02-2279-5001</td></tr>
+<tr><td class="hl">재단 직접</td><td>e-NIE, 기사 단건</td><td>한국언론진흥재단</td><td>02-2001-7792</td></tr>
+</tbody>
+</table></div>
+
+<div class="sec-t" style="margin-top:18px;"><div class="n">10</div><h2>참여 언론사 현황 (96개사, 105개 매체 / 2019.11 기준)</h2></div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>매체명</th><th>수</th></tr></thead>
+<tbody>
+<tr><td class="hl">전국종합일간</td><td>경향신문, 국민일보, 내일신문, 동아일보, 문화일보, 서울신문, 세계일보, 조선일보, 중앙일보, 한겨레, 한국일보</td><td>11</td></tr>
+<tr><td class="hl">지역종합일간</td><td>강원도민일보, 강원일보, 경기일보, 경남도민일보, 경남신문, 경남일보, 경북도민일보, 경북매일신문, 경북일보, 경상일보, 경인일보, 광주매일, 광주일보, 국제신문, 기호일보, 남도일보, 대구신문, 대구일보, 대전일보, 동양일보, 매일신문, 무등일보, 부산일보, 새전북신문, 영남일보, 울산매일, 인천일보, 전남일보, 전라일보, 전북도민일보, 전북일보, 제민일보, 제주신보, 중도일보, 중부매일, 중부일보, 충북일보, 충청일보, 충청투데이, 한라일보</td><td>40</td></tr>
+<tr><td class="hl">경제일간</td><td>매일경제, 머니투데이, 서울경제, 아시아경제, 아주경제, 이데일리, 이투데이, 파이낸셜뉴스, 한국경제, 헤럴드경제, 건설경제</td><td>11</td></tr>
+<tr><td class="hl">스포츠일간</td><td>스포츠경향, 스포츠동아, 스포츠서울, 스포츠월드, 일간스포츠</td><td>5</td></tr>
+<tr><td class="hl">영자일간</td><td>중앙데일리, 코리아타임스, 코리아헤럴드</td><td>3</td></tr>
+<tr><td class="hl">전문일간·어린이신문</td><td>디지털타임스, 전자신문, 환경일보, 소년한국일보, 어린이강원, 어린이동아</td><td>6</td></tr>
+<tr><td class="hl">종합·전문주간</td><td>기자협회보, 미디어오늘, 일요신문, 중앙선데이, 주간한국</td><td>5</td></tr>
+<tr><td class="hl">지역주간</td><td>당진시대, 옥천신문, 홍성신문, 광양신문, 김포신문, 뉴스서천, 영암우리신문, 영주시민신문, 원주투데이, 주간고양신문, 주간설악신문, 평택시민신문</td><td>12</td></tr>
+<tr><td class="hl">인터넷신문</td><td>노컷뉴스, 뉴스핌, 대덕넷, BreakNews, EBN산업뉴스, PD저널, 데일리안</td><td>7</td></tr>
+<tr><td class="hl">방송사</td><td>KBS, MBC, SBS, YTN, OBS</td><td>5</td></tr>
+<tr><td></td><td><strong>합계</strong></td><td><strong>105</strong></td></tr>
+</tbody>
+</table></div>
+
+</div>
+</div>
+<div class="page" id="p03Page">
+<div class="hero">
+  <div class="hero-chip">💰 문서 03</div>
+  <h1>뉴스저작물 사용료 징수규정 개정안 전문</h1>
+  <p>제정 2006.6.7. | 개정 2010.11.1. | 개정 2018.7.25. | 개정 202×.×.×× | 제1장 총칙 + 제2장 저작물사용료</p>
+  <div class="hero-tags"><span class="htag">제1조~제4조 총칙</span><span class="htag">제5조 모니터링·홍보</span><span class="htag">제6조 분석</span><span class="htag">제7조~제12조 단건·교육·단말기</span><span class="htag">제13조~제19조 해외·기타·가산금</span></div>
+</div>
+<div class="content">
+
+<div class="sec-t"><div class="n">1</div><h2>제1장 총칙 (제1조~제4조)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제1조 목적</span><div>한국언론진흥재단(이하 "재단")이 신탁관리하고 있는 뉴스저작물을 이용자에게 이용허락하는 경우에 징수할 <b>사용료를 정함</b>에 그 목적이 있다.</div></div>
+<div class="art-row"><span class="art-badge bl">제2조 계약의 체결</span><div>재단이 신탁관리하는 뉴스저작물의 권리(<b>복제권 및 전송권</b>)를 이용하고자 하는 자는 재단과 문서로 이용계약을 체결하여야 한다.</div></div>
+<div class="art-row"><span class="art-badge bl">제3조 계약약관</span><div>이 규정에 따라 체결되는 계약은 재단이 정한 <b>뉴스저작물 이용계약약관</b> 등에 의한다.</div></div>
+<div class="art-row"><span class="art-badge bl">제4조 용어의 정의</span><div>
+<b>1. 뉴스저작물</b>: 시사보도·여론형성·정보전파 등 목적으로 표현한 저작물. 어문·사진·영상·음악저작물(방송뉴스 고유 음향·음악)·<u>미술저작물·도형저작물(지도·도표·약도 등)</u> 포함 <span style="color:var(--green-dk)">[개정안 추가]</span><br>
+<b>2. 이용자</b>: 재단에서 관리하는 뉴스저작물을 복제·전송의 방법으로 이용하고자 하는 자 <span style="color:var(--green-dk)">[신설]</span><br>
+<b>3. 소비자</b>: 이용자로부터 뉴스저작물 및 관련 서비스를 제공받아 이용하고자 하는 자 <span style="color:var(--green-dk)">[신설]</span><br>
+<b>4. 이용자 매출액</b>: 이용자가 소비자에게 뉴스저작물 및 관련 서비스를 제공하고 수령한 금액 <span style="color:var(--green-dk)">[신설]</span><br>
+<b>5. 공공기관</b>: 가.국회·법원·헌재·선관위·감사원·국가인권위·중앙행정기관(대통령·국무총리 소속 포함)·소속기관 나.지방자치단체·소속기관 다.공공기관운영법 제4조 기관 라.지방공기업법 제2조 기관 마.공직유관단체 바.행정기관 소속 위원회 <span style="color:var(--green-dk)">[바목 개정]</span><br>
+<b>6. 교육기관</b>: 특별법·초중등교육법·고등교육법·유아교육법 등에 따라 설치된 학교, 국가·지자체 운영 교육기관 및 교육지원기관. <u>사립학교는 제외</u> <span style="color:var(--green-dk)">[신설]</span><br>
+<b>7. 기관</b>: 개인이 아닌 공공기관·기업 등을 포함하는 법인·단체 <span style="color:var(--green-dk)">[신설]</span><br>
+<b>8. 종사자</b>: 근로기준법 시행령 제7조의2에 따른 상시 사용하는 근로자 <span style="color:var(--green-dk)">[신설]</span><br>
+<b>9. 계정</b>: 시스템에 접속하기 위해 발급받는 고유한 사용자 식별 정보 <span style="color:var(--green-dk)">[신설]</span><br>
+<b>10. 간행물</b>: 출판문화산업 진흥법 제2조 제3호의 정의에 따름 <span style="color:var(--green-dk)">[신설]</span>
+</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">2</div><h2>제5조 모니터링 및 홍보 목적의 이용 (9개 유형)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">5조 1호</span><div><b>공공기관 — 모니터링 목적 내부 복제·전송</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 62%' 와 '매체당 요율 × 매체수' 중 많은 금액 (부가세 포함)</div>
+<div class="tw"><table>
+<thead><tr><th>종사자수(명)</th><th>매체당 요율(원/월)</th></tr></thead>
+<tbody>
+<tr><td class="hl">3,000 이상</td><td>170,500</td></tr>
+<tr><td class="hl">2,000~2,999</td><td>136,400</td></tr>
+<tr><td class="hl">1,000~1,999</td><td>102,300</td></tr>
+<tr><td class="hl">500~999</td><td>75,020</td></tr>
+<tr><td class="hl">100~499</td><td>54,560</td></tr>
+<tr><td class="hl">100 미만</td><td>34,100</td></tr>
+</tbody>
+</table></div>
+비고: ①내부 전송은 소속 직원만 로그인으로 접속 가능한 서비스로 제공 ②헌법기관·중앙행정기관은 종사자수 무관 '3,000이상' 요율 ③기본 계정 2개, 추가 시 1개당 <b>13,640원</b> 가산 ④방송뉴스 영상파일 이용 시 <b>204,600원</b> 가산 ⑤교육기관(공립) 포함, 사립학교 제외
+</div></div>
+<div class="art-row"><span class="art-badge bl">5조 2호</span><div><b>공공기관 — 모니터링+홍보 목적 복제·전송</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 75%' 와 '매체당 요율 × 매체수' 중 많은 금액 (부가세 포함)</div>
+<div class="tw"><table>
+<thead><tr><th>종사자수(명)</th><th>매체당 요율(원/월)</th></tr></thead>
+<tbody>
+<tr><td class="hl">3,000 이상</td><td>330,000</td></tr>
+<tr><td class="hl">2,000~2,999</td><td>288,750</td></tr>
+<tr><td class="hl">1,000~1,999</td><td>247,500</td></tr>
+<tr><td class="hl">500~999</td><td>173,250</td></tr>
+<tr><td class="hl">100~499</td><td>148,500</td></tr>
+<tr><td class="hl">100 미만</td><td>123,750</td></tr>
+</tbody>
+</table></div>
+비고: ①홍보 목적 공중 전송=계약서에 기입한 기관 웹사이트·공식SNS 게시 또는 사전 적법 동의 수신처(메일·메신저)에 발송 ②헌법기관·중앙행정기관은 '3,000이상' 적용 ③기본 계정 2개, 추가 시 <b>16,500원</b> 가산 ④방송뉴스 영상 이용 시 <b>247,500원</b> 가산 ⑤영리 목적 재배포·재전송 불가 ⑥교육기관(공립) 포함, 사립학교 제외
+</div></div>
+<div class="art-row"><span class="art-badge am">5조 3호</span><div><b>공공기관이 아닌 기관 — 모니터링 목적 내부 복제·전송</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 62%' 와 '매체당 요율 × 매체수' 중 많은 금액 (부가세 포함)</div>
+<div class="tw"><table>
+<thead><tr><th>기업 구분</th><th>매체당 요율(원/월)</th></tr></thead>
+<tbody>
+<tr><td class="hl">대기업</td><td>95,480</td></tr>
+<tr><td class="hl">중견기업</td><td>81,840</td></tr>
+<tr><td class="hl">중기업</td><td>68,200</td></tr>
+<tr><td class="hl">소기업</td><td>54,560</td></tr>
+<tr><td class="hl">소상공인</td><td>40,920</td></tr>
+</tbody>
+</table></div>
+비고: ①기업 구분은 이용허락 시점 관련 법령 기준 ②기본 계정 2개, 추가 시 <b>9,740원</b> 가산 ③방송뉴스 영상 이용 시 <b>146,140원</b> 가산
+</div></div>
+<div class="art-row"><span class="art-badge am">5조 4호</span><div><b>공공기관이 아닌 기관 — 모니터링+홍보 목적 복제·전송 [신설]</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 62%' 와 '매체당 요율 × 매체수' 중 많은 금액 (부가세 포함)</div>
+<div class="tw"><table>
+<thead><tr><th>기업 구분</th><th>매체당 요율(원/월)</th></tr></thead>
+<tbody>
+<tr><td class="hl">대기업</td><td>197,780</td></tr>
+<tr><td class="hl">중견기업</td><td>184,140</td></tr>
+<tr><td class="hl">중기업</td><td>136,400</td></tr>
+<tr><td class="hl">소기업</td><td>122,760</td></tr>
+<tr><td class="hl">소상공인</td><td>109,120</td></tr>
+</tbody>
+</table></div>
+비고: ①기업 구분은 이용허락 시점 법령 기준 ②기본 계정 2개, 추가 시 <b>11,320원</b> 가산 ③방송뉴스 영상 이용 시 <b>169,850원</b> 가산 ④영리 목적 재배포·재전송 불가
+</div></div>
+<div class="art-row"><span class="art-badge gr">5조 5호</span><div><b>공공기관이 아닌 기관·개인 — 열람 목적 이용</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 62%' 와 '17,050원(매체당 요율) × 매체수' 중 많은 금액 (부가세 포함)</div>
+기관: 계정 1개 기본, 초과 시 개당 13,640원 가산. 5개 단위 제공 시 34,100원 가산.<br>
+개인: 계정 1개 기본, 2개 초과 시 개당 13,640원 가산.
+</div></div>
+<div class="art-row"><span class="art-badge gr">5조 6호</span><div><b>이용자가 뉴스저작물 수집·배열 용역을 소비자에게 제공하는 경우</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 20%' 와 '22,000원(매체당 요율) × 매체수' 중 많은 금액 (부가세 포함)</div>
+수집·배열하는 뉴스저작물은 제5조 제1호~제4호를 적용하여 재단으로부터 이용허락을 받은 것에 한정.
+</div></div>
+<div class="art-row"><span class="art-badge pu">5조 7호</span><div><b>기관이 사전 설정한 검색어 포함 뉴스 — 모니터링 내부 복제·전송</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 72%' 와 396,000원 중 많은 금액 (부가세 포함)</div>
+기본 키워드 최대 5개. 키워드 추가 시 1개당 <b>39,600원</b> 가산.
+</div></div>
+<div class="art-row"><span class="art-badge pu">5조 8호</span><div><b>검색어 포함 뉴스 — 모니터링 내부+홍보 공중 복제·전송</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 72%' 와 792,000원 중 많은 금액 (부가세 포함)</div>
+키워드 최대 5개, 추가 시 <b>79,200원</b> 가산. 영리 목적 재배포·재전송 불가.
+</div></div>
+<div class="art-row"><span class="art-badge pu">5조 9호</span><div><b>기관이 모니터링+홍보 목적 — 기관·관심 이슈 관련 뉴스 공중 복제·전송 [신설]</b><br>
+<div class="formula">사용료(월) = 매체당 요율 × 매체수 × 비율계수(사용량/전체 기사량) (부가세 별도)</div>
+<div class="tw"><table>
+<thead><tr><th>종사자수(명)</th><th>매체당 요율(원/월)</th></tr></thead>
+<tbody>
+<tr><td class="hl">3,000 이상</td><td>400,000</td></tr>
+<tr><td class="hl">2,000~2,999</td><td>350,000</td></tr>
+<tr><td class="hl">1,000~1,999</td><td>300,000</td></tr>
+<tr><td class="hl">500~999</td><td>210,000</td></tr>
+<tr><td class="hl">100~499</td><td>180,000</td></tr>
+<tr><td class="hl">100 미만</td><td>150,000</td></tr>
+</tbody>
+</table></div>
+비고: ①헌법기관·중앙행정기관은 '3,000이상' 요율 ②<b>AI(언어모델 구축·파인 튜닝) 목적 이용 불가</b> ③이용유형이 제6조에 해당하는 경우 미적용 ④뉴스 서비스 사업 목적 불가 ⑤영리 목적 재배포·재전송 불가 ⑥비율계수: 과거기사는 실제 비율, 현재·미래 기사는 직전연도 기준
+</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">3</div><h2>제6조 분석에 대한 이용 [신설]</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">6조 1호</span><div><b>비영리 목적 뉴스 분석</b><br>
+<div class="formula">사용료(월) = 매체당 요율 × 매체 수 × 비율계수(사용량/전체기사량) (부가세 별도)</div>
+<div class="tw"><table>
+<thead><tr><th>선택 매체 수</th><th>매체당 요율(원/월)</th><th>선택 매체 수</th><th>매체당 요율(원/월)</th></tr></thead>
+<tbody>
+<tr><td class="hl">101개 이상</td><td>49,000</td><td class="hl">41~50</td><td>61,600</td></tr>
+<tr><td class="hl">91~100</td><td>51,100</td><td class="hl">31~40</td><td>63,700</td></tr>
+<tr><td class="hl">81~90</td><td>53,200</td><td class="hl">21~30</td><td>65,800</td></tr>
+<tr><td class="hl">71~80</td><td>55,300</td><td class="hl">11~20</td><td>67,900</td></tr>
+<tr><td class="hl">61~70</td><td>57,400</td><td class="hl">11 미만</td><td>70,000</td></tr>
+<tr><td class="hl">51~60</td><td>59,500</td><td></td><td></td></tr>
+</tbody>
+</table></div>
+비고: ①뉴스저작물 원문 전송 행위 금지 ②AI 목적 이용 불가 ③이용유형이 제5조에 해당 시 미적용 ④<b>학술연구 목적인 경우 매체당 요율 50% 감</b>
+</div></div>
+<div class="art-row"><span class="art-badge am">6조 2호</span><div><b>영리 목적 뉴스 분석</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 20% × 비율계수' 와 '매체당 요율 × 매체 수 × 비율계수' 중 많은 금액 (부가세 별도)</div>
+요율 테이블은 비영리 목적(6조 1호)과 동일. 추가 비고: ①원문 전송 금지 ②AI 목적 불가 ③제5조 해당 시 미적용 ④<b>뉴스 서비스 사업 목적 이용 불가</b>
+</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">4</div><h2>제7조~제12조 단건·온라인·광고·크리에이터·교육·단말기</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제7조 간행물</span><div><b>간행물에 이용하는 목적으로 뉴스저작물 단건 복제·전송</b><br>
+<div class="formula">사용료 = 뉴스저작물 단건당 사용료 요율 × 뉴스저작물 건수 (부가세 별도)</div>
+<div class="tw"><table>
+<thead><tr><th>발행부수(부)</th><th>단건당 요율(원/건)</th></tr></thead>
+<tbody>
+<tr><td class="hl">50,000 이상</td><td>1,000,000</td></tr>
+<tr><td class="hl">10,000~49,999</td><td>600,000</td></tr>
+<tr><td class="hl">5,000~9,999</td><td>350,000</td></tr>
+<tr><td class="hl">5,000 미만</td><td>150,000</td></tr>
+</tbody>
+</table></div>
+비고: ①동일 저작물을 종이·전자 양쪽 이용 시 두 번째 형식은 50% 할인 ②단건이 여러 형태(어문·이미지·영상·음악·도형)로 구성된 경우 각 형태는 별개 저작물로 산정 ③계약일로부터 1년 이내 사용, 1년 초과 시 동일 사용료 가산
+</div></div>
+<div class="art-row"><span class="art-badge bl">제8조 온라인 게재</span><div><b>인터넷 웹사이트 및 모바일 게재 목적으로 뉴스저작물 단건 복제·전송</b><br>
+• <b>비영리 목적</b>: 사용료 = 150,000원 × 뉴스저작물 건수 (부가세 별도)<br>
+• <b>영리 목적</b>: 사용료 = 300,000원 × 뉴스저작물 건수 (부가세 별도)<br>
+비고: 단건이 여러 형태로 구성된 경우 각 형태는 별개 저작물. 계약일로부터 1년 이내, 초과 시 동일 사용료 가산. 이용유형이 제9조에 해당하는 경우 미적용.
+</div></div>
+<div class="art-row"><span class="art-badge am">제9조 광고물</span><div><b>광고물 제작(카탈로그·팜플릿·브로슈어·전단지 등)에 뉴스저작물 단건 복제·전송</b><br>
+<div class="formula">사용료 = 단건당 사용료 요율 × 뉴스저작물 건수 (부가세 별도)</div>
+<div class="tw"><table>
+<thead><tr><th>제작부수</th><th>단건당 요율(원/건)</th></tr></thead>
+<tbody>
+<tr><td class="hl">50,000 이상</td><td>2,000,000</td></tr>
+<tr><td class="hl">10,000~49,999</td><td>1,200,000</td></tr>
+<tr><td class="hl">5,000~9,999</td><td>700,000</td></tr>
+<tr><td class="hl">5,000 미만</td><td>300,000</td></tr>
+</tbody>
+</table></div>
+비고: '광고물'=상품·서비스·정책 등을 알릴 목적으로 종이 인쇄 또는 디지털 형식으로 제작된 것. 동일 저작물 종이·전자 양쪽 이용 시 두 번째는 50% 할인. 여러 형태 구성 시 별개 저작물. 계약일로부터 1년 이내, 초과 시 가산.
+</div></div>
+<div class="art-row"><span class="art-badge gr">제10조 콘텐츠 크리에이터용 [신설]</span><div><b>개인이 운영하는 소셜미디어(블로그·유튜브 등)에 게시하는 목적</b><br>
+<div class="formula">사용료 = 단건당 사용료 요율 × 뉴스저작물 건수 (부가세 별도)</div>
+<div class="tw"><table>
+<thead><tr><th>총 구독자 수(명)</th><th>단건당 요율(원/건)</th></tr></thead>
+<tbody>
+<tr><td class="hl">100,000 이상</td><td>40,000</td></tr>
+<tr><td class="hl">10,000 이상~100,000 미만</td><td>30,000</td></tr>
+<tr><td class="hl">1,000 이상~10,000 미만</td><td>20,000</td></tr>
+<tr><td class="hl">1,000 미만</td><td>10,000</td></tr>
+</tbody>
+</table></div>
+비고: 총 구독자 수=소셜미디어 채널의 증빙 가능한 독자·팔로워 수. 여러 형태 구성 시 별개 저작물. <b>법인이 운영하는 블로그·유튜브에는 제8조 적용.</b> 계약일로부터 1년 이내, 초과 시 가산.
+</div></div>
+<div class="art-row"><span class="art-badge pu">제11조 교육 목적 이용</span><div><b>교육기관에서 NIE(뉴스활용교육) 등을 위한 목적으로 뉴스저작물 원문 열람·복제</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 65%' 와 '2,400원(매체당 요율) × 매체 수' 중 많은 금액 (부가세 포함)</div>
+비고: ①제공 계정은 교원 및 학생 수로 한정 ②최소 이용매체 수 45개, 이용매체 추가 원할 경우 매체당 요율 가산
+</div></div>
+<div class="art-row"><span class="art-badge rd">제12조 전자신문 단말기 이용</span><div><b>공공장소에 설치한 전자신문 단말기로 뉴스저작물 복제·전송</b><br>
+<div class="formula">사용료(월) = '이용자 매출액의 62%' 와 '34,100원(매체당 요율) × 매체 수' 중 많은 금액 (부가세 포함)</div>
+비고: 5개 이상 묶음으로 매체 선택 시 매체당 요율 50% 감
+</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">5</div><h2>제13조~제19조 해외서비스·기타·일할계산·판매촉진·가산금·개정</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제13조 해외 서비스</span><div>① 해외에서 이용하는 소비자 대상 별도 뉴스서비스 제공 시 사용료는 서비스 제공 가격 등을 감안하여 재단과 이용자가 협의하여 정할 수 있다.<br>
+② 제1항 절차를 거치지 않은 경우 해외 서비스 제공 불가.</div></div>
+<div class="art-row"><span class="art-badge bl">제14조 사용료의 계산</span><div>사용료 요율이 월 단위로 규정된 경우 한 달을 해당 월의 일수로, 연 단위로 규정된 경우 일 년을 365일로 적용해 <b>일할 계산</b>하여 적용할 수 있다.</div></div>
+<div class="art-row"><span class="art-badge am">제15조 기타 사용료</span><div>① 이 규정에서 달리 규정하지 않은 용도의 뉴스저작물 이용에 대해 재단은 이용자와 사용료를 협의하여 이용허락을 할 수 있다.<br>
+② 이용허락 후 <b>3개월 이내</b>에 그 이용허락한 사항을 문화체육관광부장관에게 서면으로 보고.<br>
+③ 동일하거나 유사한 내용으로 계약 갱신 또는 다른 이용자에게 이용허락 시 장관의 승인을 얻은 사용료징수규정에 근거해야 함.</div></div>
+<div class="art-row"><span class="art-badge am">제16조 판매촉진 등</span><div>① 홍보나 판매촉진 목적으로 무료 뉴스저작물 제공 시 <b>무료 제공 기간은 1개월을 넘을 수 없다.</b><br>
+② 무료 제공 시 사전에 관련 권리자의 동의 필요.<br>
+③ 무료 제공 기간 연장이 필요한 경우 재단과 이용자가 협의하여 기간을 정한다.</div></div>
+<div class="art-row"><span class="art-badge rd">제17조 가산금</span><div>이용자는 뉴스저작물 이용내역(계약서·계정 제공 현황 등)을 제출해야 하며 다음 경우에는 미납 사용료 외 <b>별도 가산금</b> 납부:<br>
+① 계약서 규정 범위 외 계정 추가 제공 → 추가 계정 정상 요금 정산 + 해당 판매금액의 <b>20%</b> 가산금<br>
+② 계약서 규정 범위 외 매체 추가 제공 → 추가 매체 정상 요금 정산 + 해당 판매금액의 <b>20%</b> 가산금<br>
+③ 판매촉진 범위 초과 기간 제공 → 초과 범위 정상 요금 정산 + 해당 판매금액의 <b>20%</b> 가산금<br>
+④ 계정 중복접속 허용 → 중복접속 허가 계정 포함 계약의 총 계약금액의 <b>20%</b> 가산금<br>
+⑤ 계약서 미제출·누락 → 미제출·누락 계약 정상 요금 정산 + 해당 계약금액의 <b>10%</b> 가산금<br>
+⑥ 사전 협의 없이 해외 소비자에게 상품 판매·서비스 제공 → 해당 매출 정상 요금 정산 + 해당 매출의 <b>20%</b> 가산금<br>
+⑦ 계약서 규정 범위 외 용도 또는 징수규정 규정 범위 외 용도로 이용 → 총 계약금액의 <b>20%</b> 가산금 <span style="color:var(--green-dk)">[신설]</span>
+</div></div>
+<div class="art-row"><span class="art-badge bl">제18조~제19조 개정·세칙</span><div>제18조(규정의 개정): 뉴스저작권운영위원회의 의결을 거쳐 문화체육관광부장관의 승인을 얻어야 한다.<br>
+제19조(시행세칙): 시행과 관련한 필요 사항은 뉴스저작권운영위원회의 의결을 거쳐 세칙으로 정한다.<br>
+부칙 제1조(시행일): 문화체육관광부장관의 승인을 받은 날부터 시행한다.</div></div>
+</div>
+
+</div>
+</div><div class="page" id="p031Page">
+<div class="hero">
+  <div class="hero-chip">🔄 문서 03-1</div>
+  <h1>뉴스저작물 사용료 징수규정 신구조문대비표</h1>
+  <p>현행 규정과 개정 승인(안)의 조문별 변경사항 대비 | 신설·삭제·개정 전체 수록</p>
+</div>
+<div class="content">
+
+<div class="sec-t"><div class="n">1</div><h2>총칙 변경사항 (제1조~제4조)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제1조 목적</span><div>현행: "이용자(재단과 뉴스저작물 이용계약을 체결하는 자를 말하고, 이하 같다)에게" → 개정: "이용자에게" (이용자 정의를 제4조 제2호로 이동)</div></div>
+<div class="art-row"><span class="art-badge bl">제2조 계약의 체결</span><div>현행: "복제, 배포, 공중송신 등" → 개정: "<b>복제권 및 전송권</b>" (명확화)</div></div>
+<div class="art-row"><span class="art-badge bl">제4조 용어 정의</span><div>
+• 뉴스저작물 범위: 현행(어문·사진·영상·음악저작물) → 개정(<b>미술저작물·도형저작물 추가</b>)<br>
+• <span style="color:var(--green-dk)">신설</span>: 이용자(2호), 소비자(3호), 이용자 매출액(4호), 기관(7호), 종사자(8호), 계정(9호), 간행물(10호)<br>
+• 공공기관 바목: 현행(국·공립학교·교육지원기관) → 개정(<b>행정기관 소속 위원회</b>로 변경)<br>
+• 교육기관: 현행 2호(별도 규정) → 개정 6호로 재배치. <b>사립학교 제외 명시</b><br>
+• <span style="color:var(--red-dk)">삭제</span>: 공공도서관(4호), 대학도서관(5호)
+</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">2</div><h2>제2장 저작물사용료 주요 변경사항 (제5조~제17조)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge am">제5조 구조 전면 개편</span><div>현행 '매체별 뉴스제공서비스'(구 제6조)를 개정안에서 <b>제5조</b>로 번호 변경. 공공기관 내부 전송 요율은 종사자수 기준으로 통일. <b>신설 항목</b>: 기업 모니터링+홍보(4호), 열람 목적(5호), 용역제공(6호), 검색어 단위 내부(7호), 검색어 단위 내부+홍보(8호), 기관 관심 이슈 복제(9호)</div></div>
+<div class="art-row"><span class="art-badge gr">제6조 분석 이용 [전부 신설]</span><div>비영리·영리 목적 뉴스 분석 사용료 체계 신설. <b>AI(언어모델 구축·파인 튜닝) 목적 이용 금지 명시.</b> 선택 매체 수에 따른 역비례 요율(101개이상 49,000원~11미만 70,000원) 적용. 비율계수(사용량/전체기사량) 과금 방식 도입. 학술연구 목적인 경우 매체당 요율 50% 감.</div></div>
+<div class="art-row"><span class="art-badge bl">제7조~제9조 단건 구조 변경</span><div>현행 제9조 복제·배포 → 개정에서 <b>제7조(간행물)·제8조(온라인)·제9조(광고물)</b>로 분리.<br>
+부가세: 현행 포함 → 개정 <b>별도</b>로 변경.<br>
+발행부수 단계 세분화. 동일 저작물 종이·전자 양쪽 이용 시 두 번째 50% 할인 조항 신설.</div></div>
+<div class="art-row"><span class="art-badge gr">제10조 콘텐츠 크리에이터용 [전부 신설]</span><div>개인 소셜미디어(블로그·유튜브) 게시 목적. 구독자 수에 따른 차등 요율(100,000이상 40,000원~1,000미만 10,000원). <b>법인이 운영하는 채널에는 제8조 적용.</b></div></div>
+<div class="art-row"><span class="art-badge pu">제11조 교육 목적 이용 — 산정 방식 변경</span><div>현행: <b>연 판매금액의 65% 또는 1,300,000원</b> 중 많은 금액 → 개정: <b>월 단위로 변경</b>, 매체당 요율 2,400원 × 매체 수. 최소 이용매체 수 45개, 추가 가능.</div></div>
+<div class="art-row"><span class="art-badge rd">제12조 전자신문 단말기 — 구조 단순화</span><div>현행: 일반 매체와 패키지 구분(34,100원 또는 17,050원) → 개정: 단일 요율 34,100원 적용. <b>5개 이상 묶음 선택 시 50% 감</b> 방식으로 단순화.</div></div>
+<div class="art-row"><span class="art-badge bl">제14조 사용료 계산 [신설]</span><div>월 단위·연 단위 요율의 일할 계산 적용 근거 마련.</div></div>
+<div class="art-row"><span class="art-badge am">제15조 기타 사용료 — 방식 변경</span><div>현행: 징수규정 개정안 제출→승인 후 사후 정산 → 개정: 이용허락 후 3개월 이내 장관에 <b>서면 보고</b> 방식으로 변경. 동일·유사 서비스 갱신·타 이용자 허락 시 승인 규정 근거 유지.</div></div>
+<div class="art-row"><span class="art-badge rd">제17조 가산금 — 7호 신설</span><div>현행 1~6호에 <span style="color:var(--green-dk)">신설</span>: "<b>계약서에 규정한 범위 외 용도 또는 징수규정 규정 범위 외 용도로 이용 시 총 계약금액의 20% 가산금</b>"</div></div>
+</div>
+
+</div>
+</div><div class="page" id="p04Page">
+<div class="hero">
+  <div class="hero-chip">📋 문서 04</div>
+  <h1>뉴스저작물 이용 안내</h1>
+  <p>2025. 10. | 한국언론진흥재단 뉴스저작권팀 02-2001-7791~8 | 121개사 131개 매체</p>
+  <div class="hero-tags"><span class="htag">저작권 개요</span><span class="htag">침해 사례</span><span class="htag">올바른 이용</span><span class="htag">유통사 현황</span><span class="htag">스크랩 상품</span><span class="htag">뉴스토어</span><span class="htag">131개 매체 현황</span></div>
+</div>
+<div class="content">
+
+<div class="sec-t"><div class="n">1</div><h2>뉴스저작권 개요</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">정의</span><div><b>뉴스저작물</b>: 시사보도·여론형성·정보전파 등을 목적으로 발행되는 정기간행물·방송 또는 인터넷 매체에 보도된 기사</div></div>
+<div class="art-row"><span class="art-badge bl">종류</span><div>
+• <b>어문저작물</b>: 신문·인터넷 등에 텍스트 형태로 보도된 뉴스. 방송에서 기자가 보도한 뉴스는 무형의 구술에 의한 어문저작물에 해당<br>
+• <b>사진저작물</b>: 언론사 기자가 촬영한 보도사진<br>
+• <b>음악저작물</b>: 방송뉴스 등에 포함된 음향 및 고유의 음악<br>
+• <b>영상저작물</b>: 방송·인터넷 등에서 영상으로 제작·보도한 뉴스
+</div></div>
+<div class="art-row"><span class="art-badge am">저작자</span><div>뉴스는 대부분 <b>'업무상저작물'</b>로 <u>기자가 아닌 언론사가 저작자</u></div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">2</div><h2>뉴스저작권 침해 사례 (저작권자 허락 없이 이용 시 침해)</h2></div>
+<div class="ib rd"><strong>⚠️ 저작권법 제125조(손해배상 청구) 또는 제136조(벌칙) 적용 대상</strong></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge rd">❌</span><div>뉴스 기사 텍스트·스크랩을 <b>사내 전산망에 게시하거나 공유</b>하는 경우</div></div>
+<div class="art-row"><span class="art-badge rd">❌</span><div>뉴스 기사를 <b>이메일 등을 통해 내·외부에 전송하거나 복사·배포</b>하는 경우</div></div>
+<div class="art-row"><span class="art-badge rd">❌</span><div><b>홈페이지·블로그·SNS</b>에 뉴스 기사나 영상을 게시하는 경우</div></div>
+<div class="art-row"><span class="art-badge rd">❌</span><div>뉴스 기사 전부 또는 일부를 <b>기관 홍보물·자료집 등에 넣어 배포</b>하는 경우</div></div>
+<div class="art-row"><span class="art-badge rd">❌</span><div><b>녹화 장비</b>를 이용해 방송뉴스를 녹화하거나 기사 텍스트를 추출해 이용하는 경우</div></div>
+<div class="art-row"><span class="art-badge rd">❌</span><div>이용계약을 체결하지 않고 <b>용역업체(홍보대행사·모니터링대행사 등)를 통해 뉴스를 제공받아 내외부에 공유</b>하는 경우</div></div>
+<div class="art-row"><span class="art-badge rd">❌</span><div>타 기관(유관·상급기관)에 제공된 <b>뉴스스크랩 프로그램 ID를 이용하거나 공유</b>하는 경우</div></div>
+<div class="art-row"><span class="art-badge rd">❌</span><div><b>웹 크롤링</b> 등을 통해 기사를 수집·저장해 데이터베이스로 활용하거나 외부에 제공·서비스하는 경우</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">3</div><h2>올바른 뉴스저작물 이용 방법</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge gr">✅</span><div>뉴스저작권 신탁관리기관(한국언론진흥재단)과 계약을 체결한 <b>유통사를 통해 뉴스저작권 상품 구매</b></div></div>
+<div class="art-row"><span class="art-badge gr">✅</span><div>뉴스저작권 합법 이용 플랫폼 <b>'뉴스토어'(www.newstore.or.kr)</b>를 통해 뉴스저작권 상품 구매</div></div>
+<div class="art-row"><span class="art-badge gr">✅</span><div>저작권자(언론사)로부터 <b>구매 또는 서면 이용 허락</b></div></div>
+<div class="art-row"><span class="art-badge am">⚠️ 링크</span><div>언론사 홈페이지 <b>직접링크(deep link)</b>: 현재까지는 저작권법상 복제·전송에 해당되지 않는다는 것이 법원의 판단이지만, 업무적·상업적으로 이용하여 경제적 이득을 취했을 경우에는 <b>민법상 부당이득·불법행위 등을 이유로 손해배상 책임</b>을 질 수 있음</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">4</div><h2>뉴스저작권 신탁관리기관 및 유통사 현황 (2025.10 기준)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">재단 역할</span><div>한국언론진흥재단은 저작권법 105조에 따른 뉴스저작물 신탁관리기관으로서 2025년 10월 현재 <b>121개 언론사 / 131개 매체</b>의 뉴스저작권 관리. 유통사를 통해 뉴스저작물 이용에 대한 저작권료를 징수.</div></div>
+</div>
+<div class="tw"><table>
+<thead><tr><th>프로그램명</th><th>업체명</th><th>사업자번호</th><th>대표자</th><th>연락처</th><th>비고</th></tr></thead>
+<tbody>
+<tr><td class="hl">스크랩마스터</td><td>(주)다하미커뮤니케이션즈</td><td>112-81-49789</td><td>박용립</td><td>02-593-4174</td><td class="gr">정상 운영</td></tr>
+<tr><td class="hl">아이서퍼</td><td>(주)비큐에이아이</td><td>221-81-13339</td><td>임경환</td><td>02-3487-0215</td><td class="gr">정상 운영</td></tr>
+<tr><td class="hl">스크랩프로</td><td>굿라이프미디어(주)</td><td>576-88-03292</td><td>기종연</td><td>02-6223-5004</td><td class="am">기능 개선 후 정식 서비스 예정</td></tr>
+</tbody>
+</table></div>
+<div class="ib am">※ 입찰 시 재단과 미계약 사업자가 낙찰될 경우, 추후 재단-낙찰자 간 뉴스저작물 이용 허락 체결 가능</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">5</div><h2>유통사 뉴스스크랩 상품 및 제공서비스 안내</h2></div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>명칭</th><th>설명</th></tr></thead>
+<tbody>
+<tr><td class="hl" rowspan="3">스크랩 상품</td><td><b>내부라이선스</b></td><td>전자스크랩·내부전산망·모바일 접속 등으로 사용자 관련 뉴스를 기관 내부에 한하여 복제·전송·배포. 관련 뉴스란 해당 사용자의 사업 및 업무에 직·간접적으로 연관성이 있는 뉴스에 한함.</td></tr>
+<tr><td><b>통합라이선스</b></td><td>내부라이선스에 홈페이지 게시·대외발송 서비스를 포함하여 사용자 관련 뉴스를 내·외부로 복제·전송·배포 가능한 상품</td></tr>
+<tr><td><b>라이선스플러스</b></td><td>내부·통합라이선스 상품에 스크랩 대행 용역이 추가된 상품</td></tr>
+</tbody>
+</table></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">전자스크랩</span><div>사용자 관련 뉴스를 아이서퍼 및 스크랩마스터를 이용하여 스크랩하고 출력하는 서비스</div></div>
+<div class="art-row"><span class="art-badge bl">내부전산망</span><div>스크랩한 뉴스를 내부 전자게시판에 올려 소속 직원 모두가 열람하는 서비스. 단, 해당 전자게시판은 <b>로그인 절차를 통해 소속 직원만 접속 가능</b>한 곳이어야 함</div></div>
+<div class="art-row"><span class="art-badge bl">모바일</span><div>내부전산망에 게재한 뉴스를 소속 직원 모두가 스마트폰을 통해 열람하는 서비스</div></div>
+<div class="art-row"><span class="art-badge am">홈페이지(SNS)</span><div>사용자가 운영하는 대표 홈페이지 또는 보도자료 게시판·블로그에 관련 뉴스를 게재할 수 있는 서비스. 단, <b>계약서에 명시한 계정 및 URL에 한정</b>함</div></div>
+<div class="art-row"><span class="art-badge am">대외발송</span><div>이메일·뉴스레터 등을 이용하여 관련 뉴스를 전송할 수 있는 서비스</div></div>
+<div class="art-row"><span class="art-badge gr">스크랩대행</span><div>사용자가 내부·통합라이선스 상품 구입을 통하여 라이선스를 획득한 매체의 <b>신문지면 PDF 중 원하는 기사를 뉴스스크랩 결과물</b>로 사용자에게 제공하는 서비스</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">6</div><h2>뉴스토어 이용 안내 (www.newstore.or.kr)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">개요</span><div>국내 최대 뉴스 아카이브인 빅카인즈와 연계하여 뉴스콘텐츠를 합법적으로 이용할 수 있는 뉴스저작권 합법 이용 플랫폼</div></div>
+<div class="art-row"><span class="art-badge gr">① 기사 단건</span><div>
+정의: 기사 텍스트 및 이미지 한 건에 대한 이용 허락 상품<br>
+용도: 인쇄·홍보물 제작 / 웹·모바일에 게시 / 영상에 삽입<br>
+절차: 뉴스토어 → 검색 → 구매(이용허락 취득) → 인쇄물 제작·웹 게시 등<br>
+비고: <b>기사 본문과 사진은 별도의 저작물로 취급</b>
+</div></div>
+<div class="art-row"><span class="art-badge gr">② 뉴스데이터 (DB)</span><div>
+정의: 뉴스 DB를 월 단위로 제공하는 상품<br>
+용도: 다량의 뉴스 관련 데이터 분석이 필요할 때<br>
+형식: JSON 파일<br>
+절차: 뉴스토어 → 뉴스데이터 구매 → 뉴스 DB 다운로드 또는 API Key 발급을 통한 데이터 호출<br>
+비고: 재단 뉴스빅데이터분석시스템을 활용해 기사 카테고리 등 속성 색인
+</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">7</div><h2>참여 언론사 현황 (121개사, 131개 매체 / 2025.10 기준)</h2></div>
+<div class="tw"><table>
+<thead><tr><th>구분</th><th>매체명</th><th>수</th></tr></thead>
+<tbody>
+<tr><td class="hl">전국종합일간</td><td>경향신문, 국민일보, 내일신문, *동아일보, 문화일보, 서울신문, 세계일보, 아시아투데이, *조선일보, *중앙일보, 한겨레, 한국일보</td><td>12</td></tr>
+<tr><td class="hl">지역종합일간</td><td>강원도민일보, 강원일보, 경기신문, 경기일보, 경남도민일보, 경남신문, 경남일보, 경북도민일보, 경북매일신문, 경북일보, 경상일보, 경인일보, 광남일보, 광주매일신문, 광주일보, 국제신문, 금강일보, 기호일보, 남도일보, 대구신문, 대구일보, 대전일보, 동양일보, 매일신문, 무등일보, 부산일보, 새전북신문, 영남일보, 울산매일, 울산신문, 인천일보, 전남일보, 전라일보, 전북도민일보, 전북일보, 제민일보, 제주일보, 중도일보, 중부매일, 중부일보, 충북일보, 충청일보, 충청타임즈, 충청투데이, 한라일보</td><td>45</td></tr>
+<tr><td class="hl">경제일간</td><td>e대한경제, *매일경제, 머니투데이, 메트로경제, 브릿지경제, 서울경제, 아시아경제, 아주경제, 에너지경제, 이데일리, 이투데이, 파이낸셜뉴스, *한국경제, 헤럴드경제</td><td>14</td></tr>
+<tr><td class="hl">스포츠일간</td><td>스포츠경향, *스포츠동아, 스포츠서울, 스포츠월드, 일간스포츠</td><td>5</td></tr>
+<tr><td class="hl">영자일간</td><td>*코리아중앙데일리, 코리아타임스, 코리아헤럴드</td><td>3</td></tr>
+<tr><td class="hl">전문일간·어린이신문</td><td>농민신문, *디지털타임스, 소년한국일보, *어린이동아, 전자신문, 환경일보</td><td>6</td></tr>
+<tr><td class="hl">종합·전문주간</td><td>기자협회보, 미디어오늘, 시사IN, 이코노미스트, 일요신문, 주간한국, *중앙선데이, 투데이신문, 한겨레21</td><td>9</td></tr>
+<tr><td class="hl">지역주간</td><td>고양신문, 광양신문, 김포신문, 뉴스서천, 당진시대, 영암우리신문, 영주시민신문, 옥천신문, 원주투데이, 주간설악신문, 평택시민신문, 홍성신문</td><td>12</td></tr>
+<tr><td class="hl">인터넷신문</td><td>EBN, PD저널, 노컷뉴스, 뉴스펭귄, 뉴스핌, 데일리안, 미디어펜, 브레이크뉴스, 비즈워치, 서울와이어, 스포츠한국, 어린이강원일보, 여성경제신문, 이코노믹데일리, 지디넷코리아, 쿠키뉴스, 펜앤드마이크, 프레시안, 헬로디디</td><td>19</td></tr>
+<tr><td class="hl">방송사</td><td>KBS, MBC, MBN, OBS, SBS, YTN</td><td>6</td></tr>
+<tr><td></td><td><strong>합계 (* 표시는 대리중개사)</strong></td><td><strong>131</strong></td></tr>
+</tbody>
+</table></div>
+
+</div>
+</div><div class="page" id="p05Page">
+<div class="hero">
+  <div class="hero-chip">🏛️ 문서 05</div>
+  <h1>공공부문 뉴스저작물 이용계약 관련 안내</h1>
+  <p>2024년 계약방식 변경 이후 공공기관의 뉴스스크랩 서비스 발주·입찰·계약 절차 가이드</p>
+</div>
+<div class="content">
+
+<div class="sec-t"><div class="n">1</div><h2>계약 구조 변경 배경</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">변경 취지</span><div>한국언론진흥재단은 민간사업자의 판촉 및 자율성을 확대하고 공공부문 이용자가 다양한 뉴스 서비스를 제공받을 수 있도록 <b>이용자-재단 간 계약 방식</b>에서 <b>이용자-민간사업자 간 계약 방식</b>으로 변경.</div></div>
+<div class="art-row"><span class="art-badge am">현행 구조</span><div>이용자는 수의계약 또는 입찰을 통해 민간사업자와 서비스 계약을 맺고, 재단은 저작권신탁관리기관으로서 민간사업자에게 뉴스저작물 이용 허락을 제공.
+<br><br>
+<b>[이용자(발주사)] ←조달계약/대금→ [민간사업자] ←이용허락/저작권료→ [재단(한국언론진흥재단)]</b>
+</div></div>
+<div class="art-row"><span class="art-badge rd">⚠️ 문제 상황</span><div>일부 입찰을 진행하는 이용자가 참가자격을 <b>'재단 공식 유통대행사'</b>로 기재하여 공고하는 경우가 있음. 이 경우 새로운 민간사업자의 참여가 제한되고, 재단이 공식 유통사 제도를 운영한다는 오해를 야기.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">2</div><h2>협조사항 및 권장 문구</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge gr">✅ 권장 문구</span><div>입찰 참가자격에 아래 문구 기재 권장:<br>
+<b>"한국언론진흥재단의 뉴스저작물 사용료 징수규정에 의거 뉴스저작권료 납부가 가능한 사업자"</b></div></div>
+<div class="art-row"><span class="art-badge rd">❌ 사용 금지 문구</span><div>• '재단 공식 유통대행사'<br>
+• '재단 지정 공식 유통 사업자' 등의 문구</div></div>
+<div class="art-row"><span class="art-badge am">우선 협상자 선정 시</span><div>재단과 계약을 체결하지 않은 사업자가 우선 협상자로 선정될 경우, 발주사는 협상 시 <b>재단-사업자 간 뉴스저작물 이용 허락 계약 가능 여부 확인</b>.<br>
+※ 사업자의 용역 수행 능력은 재단에서 검증하지 않으므로 발주사의 입찰 심사를 통해 면밀한 검토 필요</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">3</div><h2>입찰 절차</h2></div>
+<div class="flow">
+<div class="fs"><div class="fn">단계 1</div><div class="ft">입찰 공고</div><div class="fd">서비스 가능 사업자 모두 입찰에 참여할 수 있도록 제안서 작성 및 입찰공고 실시. 참가자격 문구 정확히 기재.</div></div>
+<div class="fa">▶</div>
+<div class="fs am"><div class="fn">단계 2</div><div class="ft">입찰 심사 및 우선 협상자 선정</div><div class="fd">발주사는 재단-사업자 간 계약 여부와 무관하게 입찰 심사로 선정. ❶뉴스저작권료 납부 가능 예산 ❷PDF 확보 방안 확인 필수.</div></div>
+<div class="fa">▶</div>
+<div class="fs"><div class="fn">단계 3</div><div class="ft">재단 계약 체결 요청</div><div class="fd">우선 협상자 선정 후 사업자에게 재단과 뉴스저작물 이용 허락 계약 체결 요청.</div></div>
+<div class="fa">▶</div>
+<div class="fs gr"><div class="fn">단계 4</div><div class="ft">용역 계약 체결</div><div class="fd">발주사-낙찰자 간 용역 계약 체결. 미계약 사업자 낙찰 시 추후 재단-낙찰자 간 이용 허락 계약 체결 필요.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">4</div><h2>별첨 Q&A</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">Q1</span><div><b>제안서 검토 및 우선 협상자 선정 시 꼭 확인해야 하는 내용은?</b><br>
+재단과 계약을 체결하지 않은 민간사업자가 투찰했을 경우:<br>
+❶ 저작권신탁관리기관인 <b>재단에 뉴스저작권료를 납부해야 한다는 내용</b> (재단에서 민간사업자에게 언론사의 PDF 자료를 제공하지 않음)<br>
+❷ <b>민간사업자가 언론사의 PDF 자료를 직접 확보할 수 있는지</b> 확인 권장<br>
+※ 뉴스저작권료 납부 예산을 확보하지 않았거나 언론사의 PDF 자료를 확보할 수 없는 민간사업자는 추후 재단과 계약이 불가할 수 있음</div></div>
+<div class="art-row"><span class="art-badge am">Q2</span><div><b>소액수의계약(총액 견적입찰 방법)으로 계약하는 경우 유의사항은?</b><br>
+서비스 안정성을 확보하기 위해 입찰공고문·과업지시서의 참가자격에 다음 내용 포함 가능:<br>
+• '한국언론진흥재단과 뉴스저작물 이용 허락 계약을 체결한 자 또는 <b>체결 예정인 자</b>'<br>
+• '<b>뉴스저작물 스크랩 프로그램을 보유하고 언론사의 PDF 자료를 확보할 수 있는 자</b>'<br>
+• '한국언론진흥재단의 뉴스저작물 사용료 징수규정에 의거 뉴스저작권료 납부가 가능한 사업자'</div></div>
+<div class="art-row"><span class="art-badge gr">Q3</span><div><b>재단과 이용 허락 계약을 체결하지 않은 민간사업자를 최종 낙찰자로 선정해도 될까요?</b><br>
+재단과 계약을 체결하지 않은 민간사업자도 최종 낙찰자로 선정할 수 있습니다. 다만, 최종 낙찰자 선정 이후 뉴스저작물 이용 허락 계약을 추진할 경우 <b>사업 일정이 지연될 수 있으므로</b>, 원활한 사업 수행을 위해 우선 협상자와의 협상 과정에서 재단과 이용 허락 계약을 체결할 수 있는지 확인할 것을 권장합니다.</div></div>
+</div>
+
+</div>
+</div><div class="page" id="p06Page">
+<div class="hero">
+  <div class="hero-chip">📄 문서 06</div>
+  <h1>뉴스저작물 이용계약약관</h1>
+  <p>한국언론진흥재단(재단)과 이용자 간 뉴스저작물 이용에 관한 계약 조건 | 계약서 2통 작성·기명날인 후 각 1통씩 보관</p>
+</div>
+<div class="content">
+
+<div class="sec-t"><div class="n">1</div><h2>제1조~제2조 계약 목적·용어 정의</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제1조 목적</span><div>재단과 이용자 사이에 준수해야 할 <b>이용방법 및 이용계약조건 등을 정함</b>을 목적으로 한다.</div></div>
+<div class="art-row"><span class="art-badge bl">제2조 용어의 정의</span><div>
+<b>1. 뉴스저작물</b>: 인간의 사상이나 감정을 시사보도·여론형성·정보전파 등을 목적으로 표현한 저작물로서 어문저작물·사진저작물·영상저작물·음악저작물(방송뉴스 등을 위해 고유하게 작성된 음향·음악)을 말한다.<br>
+<b>2. 저작자</b>: 뉴스저작권신탁계약에 따라 뉴스저작물에 관한 저작권을 재단에 신탁한 자를 말한다.
+</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">2</div><h2>제3조 이용허락의 범위</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">① 저작물 범위</span><div>이용자가 사전에 신청하여 재단으로부터 이용허락을 받은 뉴스저작물에 한함</div></div>
+<div class="art-row"><span class="art-badge am">② 제3자 수익 제공</span><div>이용자는 뉴스저작물을 제3자에게 제공하고 이로써 <b>수익을 얻고자 할 경우 재단과 협의</b>하여 진행하여야 하며, 재단이 운영하는 뉴스저작권 운영위원회가 정하는 바에 따라야 한다.</div></div>
+<div class="art-row"><span class="art-badge am">③ 이용 방식</span><div>이용자는 재단과 협의한 방식(「뉴스저작물 사용료 징수규정」 제__조에 해당하는 서비스)으로만 이용하여야 하고, 다른 방식으로 이용하고자 하는 경우에는 <b>사전에 재단의 서면승낙</b>을 얻어야 한다.</div></div>
+<div class="art-row"><span class="art-badge bl">④ 이용 지역</span><div><b>대한민국으로 한정</b>. 대한민국 이외의 지역은 뉴스저작권 운영위원회가 정하는 바에 따름.</div></div>
+<div class="art-row"><span class="art-badge rd">⑤ 저작인격권</span><div>이용자는 해당 뉴스저작물 저작자의 저작인격권을 침해해서는 아니되며, 침해한 경우 저작자에 대해 그 책임을 져야 한다.</div></div>
+<div class="art-row"><span class="art-badge rd">⑥ 신탁관리권 소멸 통지</span><div>재단으로부터 신탁관리권이 소멸하였다고 통지받은 뉴스저작물에 관하여는 위 통지를 받은 후 <b>3개월 이내</b>에 이용을 중지하고, 이용료 정산을 완료하며, 복제물을 폐기하여야 한다.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">3</div><h2>제4조 복제방지시스템 등</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">①</span><div>이용자는 이용 허락받은 뉴스저작물을 제3자가 불법복제하지 않도록 필요한 조치를 취하여야 한다.</div></div>
+<div class="art-row"><span class="art-badge bl">②</span><div>재단은 복제방지시스템이나 저작권표시시스템에 따라 일정한 표시를 뉴스저작물에 부착할 수 있고, 이용자는 위 표시를 <b>손상시켜서는 아니 된다</b>.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">4</div><h2>제5조 사용료</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">①</span><div>이용자는 재단에게 '뉴스저작물 사용료징수규정'이 정한 바에 따라 사용료 지급</div></div>
+<div class="art-row"><span class="art-badge am">②</span><div><b>월별 정산</b>, 익월 20일까지 지급. 당월의 정산내역서는 <b>익월 5일까지</b> 재단에 제출.</div></div>
+<div class="art-row"><span class="art-badge am">③</span><div>재단은 정산내역서가 불성실하거나 조사가 필요한 경우 이용 관련 데이터 확인 조사 가능. 이용자는 성실히 응해야 함.</div></div>
+<div class="art-row"><span class="art-badge rd">④ 연체</span><div>월별 사용료 지급 연체 시: 월 사용료의 <b>3%</b> 지연손해금을 가산하여 1개월 이내 지급. 기간 내 미지급 시 매 1개월마다 <b>1.2%</b> 증가산금 추가. <b>증가산금 부과기간은 최대 12개월</b>.</div></div>
+<div class="art-row"><span class="art-badge bl">⑤</span><div>사용료징수규정 변경 시 이용자에게 통보. 변경된 사용료는 변경 이후 새로 체결·갱신되는 계약에 적용.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">5</div><h2>제6조~제7조 이용자료의 제출·가산금</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제6조</span><div>
+① 이용자는 사용료 산정을 위하여 이용실태를 명확히 파악할 수 있도록 필요한 조치 이행<br>
+② 재단은 이용자에게 사용료 산정에 필요한 자료의 열람 및 제공 청구 가능. 이용자는 청구에 따라야 함.<br>
+③ 재단은 이용자의 이용실적·거래정보 확인 가능 및 자료 제출 요구 가능.<br>
+④ 재단은 제공받은 정보를 외부 유출 또는 사용료 산정 이외의 목적으로 이용 금지. 단, 이용자 동의 또는 법령 특별 규정 시 예외.
+</div></div>
+<div class="art-row"><span class="art-badge rd">제7조 가산금</span><div>이용자는 '뉴스저작물 사용료징수규정'에 따른 가산금 지급사유 발생 시 동 규정에 따라 재단에 가산금 납부.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">6</div><h2>제8조 계약의 해지</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge rd">재단의 해지 가능 사유</span><div>
+1. 이용자가 권한 없이 또는 이용허락 범위를 초과하여 뉴스저작물 이용<br>
+2. 불법복제 방지 조치 미이행 또는 복제방지·저작권표시 손상<br>
+3. 제출한 사용료 정산내역서가 허위인 경우<br>
+4. 이용자가 저작물을 약관에 반하여 이용하는 경우<br>
+5. 재단 이외의 권리자와 독점적 이용계약을 체결함으로써 다른 이용자의 공정한 경쟁을 저해하는 경우<br>
+6. 이용자가 사용료를 <b>3개월 이상 체납</b>하거나 그 체납자가 대표자로 있는 법인의 경우<br>
+7. 기타 거래 질서를 해할 명백한 우려가 있거나 신의성실 원칙에 어긋나는 경우
+</div></div>
+<div class="art-row"><span class="art-badge am">이용자의 해지 가능 사유</span><div>재단에게 뉴스저작물에 관한 신탁관리권이 없음이 판명된 경우 (사전 통보한 경우는 제외)</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">7</div><h2>제9조~제12조 이전 협의 효력·재판관할·계약기간·부속계약</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제9조</span><div>본 계약 이전에 체결되었던 양해각서(MOU) 및 뉴스저작물 이용 계약은 모두 본 계약으로 대치. 내용이 상이한 경우 <b>본 계약 우선</b>.</div></div>
+<div class="art-row"><span class="art-badge bl">제10조 재판관할</span><div>분쟁 발생 시 우선 <b>한국저작권위원회의 조정 절차</b>를 통하여 해결. 조정 불성립 시 <b>서울중앙지방법원</b>을 관할법원으로 한다.</div></div>
+<div class="art-row"><span class="art-badge bl">제11조 계약기간</span><div>계약기간 만료 <b>3개월 전까지</b> 쌍방 모두가 서면에 의하여 계약종료의 의사표시를 하지 아니하면 <b>1년씩 자동으로 연장</b>.</div></div>
+<div class="art-row"><span class="art-badge bl">제12조 부속계약</span><div>본 계약서에 없는 별도 합의 내용이 있는 경우 부속계약서를 작성하고 서명날인하여 본 계약서 말미에 첨부. 부속계약서는 본 계약서와 <b>동일한 효력</b>.</div></div>
+</div>
+
+</div>
+</div><div class="page" id="p07Page">
+<div class="hero">
+  <div class="hero-chip">🤝 문서 07</div>
+  <h1>뉴스저작물 신탁계약약관</h1>
+  <p>위탁자(언론사)와 수탁자(한국언론진흥재단) 간 뉴스저작권 신탁계약 | 계약서 2통 작성·기명날인 후 각 1통씩 보관</p>
+</div>
+<div class="content">
+
+<div class="sec-t"><div class="n">1</div><h2>제1조~제2조 목적·용어 정의</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제1조 목적</span><div>위탁자의 뉴스저작권을 수탁자에게 신탁하고 수탁자가 이를 관리함에 있어서 <b>위탁자의 뉴스저작권을 보호하고 이용을 활성화</b>할 수 있도록 위탁자와 수탁자 사이의 권리의무 기타 필요한 사항을 정함.</div></div>
+<div class="art-row"><span class="art-badge bl">제2조-1 뉴스저작물</span><div>시사보도·여론형성·정보전파 등을 목적으로 발행되는 신문 기타 정기간행물(인터넷신문 포함)에 수록되어 <b>공표된 저작물</b>, 공표될 예정인 저작물, 뉴스통신에 의하여 공표되거나 공표될 예정인 저작물, 방송법상의 '보도'에 관한 프로그램, 기타 위탁자가 뉴스저작물로 분류하여 관리하고 있는 저작물(편집저작물 포함). 단, 저작물성·저작권이 인정되지 않는 것은 제외.</div></div>
+<div class="art-row"><span class="art-badge bl">제2조-2 매체</span><div>위 1호 기재의 정기간행물, 뉴스통신 기타 뉴스저작물의 공표를 위하여 정기적으로 간행되는 것</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">2</div><h2>제3조 신탁의 범위</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">①</span><div>위탁자는 현재 보유하거나 장차 보유할 뉴스저작물의 <b>복제권과 전송·배포권(신탁저작권)의 전부 또는 일부</b>를 수탁자에게 신탁 가능. 일부 신탁의 범위는 특정 콘텐츠·특정 사업 등으로 약정하며 부속계약서에 명시.</div></div>
+<div class="art-row"><span class="art-badge bl">②</span><div>위탁자는 신탁할 뉴스저작물을 매체별 또는 보도프로그램별로 특정하고, 그 명칭을 기재.</div></div>
+<div class="art-row"><span class="art-badge bl">③</span><div>위탁자는 제1항·제2항에 의하여 특정한 매체·보도프로그램 이외의 다른 매체·보도프로그램 뉴스저작물도 <b>추가로 신탁 가능</b>.</div></div>
+<div class="art-row"><span class="art-badge bl">④</span><div>위탁자는 신탁할 뉴스저작물의 범위를 특정한 경우에도 당해 매체·보도프로그램이 담고 있는 뉴스저작물의 일부를 <b>신탁의 범위에서 제외 가능</b>.</div></div>
+<div class="art-row"><span class="art-badge bl">⑤</span><div>수탁자는 <b>대한민국과 외국의 모든 지역</b>에서 신탁저작권에 관한 관리권한을 갖음. 단, 위탁자는 수탁자의 동의를 얻어 외국에서의 신탁저작권 관리권한을 유보 가능.</div></div>
+<div class="art-row"><span class="art-badge am">⑥</span><div>이미 공표된 뉴스저작물은 <b>계약 체결과 동시에 신탁의 효력 발생</b>. 아직 공표되지 않은 저작물은 공표된 때 효력 발생.</div></div>
+<div class="art-row"><span class="art-badge am">⑦</span><div>위탁자가 미공표 저작물을 수탁자에게 제공한 경우 수탁자가 이를 <b>공표하는 것을 허락</b>한 것으로 봄.</div></div>
+<div class="art-row"><span class="art-badge am">⑧</span><div>신탁 목적인 저작물 변경은 위탁자가 추가·제외를 담은 공문을 수탁자에게 발송하고, 수탁자가 동의 공문을 발송함으로써 효력 발생. 단, <b>변경 전 체결된 이용자와의 계약은 계약 만료일까지 기존 계약 인정</b>.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">3</div><h2>제4조 저작권의 보증</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">①</span><div>위탁자는 신탁한 뉴스저작물에 관하여 위탁자에게 저작권이 있거나 타인의 저작권을 침해하고 있지 않음을 <b>확인하고 보증</b>.</div></div>
+<div class="art-row"><span class="art-badge rd">②</span><div>위탁자에게 저작권이 없거나 타인의 저작권을 침해함을 이유로 수탁자와 제3자 사이에 분쟁이 발생한 경우 <b>위탁자의 비용과 책임</b>으로 함.</div></div>
+<div class="art-row"><span class="art-badge am">③</span><div>수탁자는 필요한 경우 관련 자료를 위탁자에게 요구 가능. 위탁자는 즉시 제출 의무. <b>제출 거절 또는 충분하지 않은 자료 제출 시 수탁자는 신탁계약을 거절·해지 가능</b>.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">4</div><h2>제5조 신탁저작권의 관리방법</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">①</span><div>수탁자는 <b>선량한 관리자의 주의</b>로써 신탁저작권을 관리. 신탁저작권을 양도·담보제공 등 처분 불가.</div></div>
+<div class="art-row"><span class="art-badge bl">②</span><div>수탁자는 신탁저작권의 이용관계를 모니터링하고, 제3자에 의한 저작권 침해를 예방. 침해 시 침해행위 중지와 손해배상청구에 최선을 다해야 함.</div></div>
+<div class="art-row"><span class="art-badge bl">③</span><div>수탁자는 침해행위가 있을 경우 <b>형사고소·민사소송 등 일체의 행위를 할 권리</b>가 있음.</div></div>
+<div class="art-row"><span class="art-badge am">④</span><div>형사고소 또는 민사소송 등 행위를 한 경우 그 행위를 한 날로부터 <b>30일 이내</b>에 위탁자에게 통지.</div></div>
+<div class="art-row"><span class="art-badge am">⑤</span><div>수탁자는 수탁업무의 일부를 이용업체 또는 다른 저작권신탁관리단체에 위임 가능. 단, <b>사전에 뉴스저작권운영위원회의 동의</b> 필요.</div></div>
+<div class="art-row"><span class="art-badge am">⑥</span><div>외국에서의 신탁저작권 관리를 외국의 저작권관리단체 또는 국제적 연합기구에 위탁 가능. 단, <b>사전에 위탁자 의견 청취 의무</b>.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">5</div><h2>제6조~제8조 관리수수료·사용료 징수와 분배·신탁관리 유보</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제6조 관리수수료</span><div>① 위탁자는 신탁저작권 관리수수료로 사용료의 일정 비율에 해당하는 금액을 수탁자에게 지급. 비율은 '뉴스저작권 관리수수료규정' 제2조에 따름.<br>
+② 수탁자는 사용료를 분배함에 있어서 관리수수료를 공제하고 분배 가능.</div></div>
+<div class="art-row"><span class="art-badge bl">제7조 사용료 징수와 분배</span><div>① 수탁자는 제3자에게 뉴스저작물의 이용을 허락하고, '뉴스저작물 사용료징수규정'이 정한 바에 따라 사용료를 징수. 단, 수탁자는 위탁자가 지정하는 범위의 이용자에게는 <b>무료로 이용 가능</b>하게 해야 함.<br>
+② 수탁자는 '뉴스저작물 사용료분배규정'이 정한 바에 따라 징수한 사용료를 위탁자에게 분배.</div></div>
+<div class="art-row"><span class="art-badge rd">제8조 신탁관리 유보</span><div>수탁자는 다음 경우 이용허락·사용료 징수 등 관리업무를 일시 중지하거나 분배를 유보 가능:<br>
+1. 위탁자에게 저작권이 없거나 타인의 저작권을 침해함을 이유로 소송이 제기된 때<br>
+2. 제3자가 객관적 자료를 제출하며 저작권 또는 신탁저작권 귀속 관계에 이의를 제기할 때<br>
+② 위탁자에게 저작권이 있거나 침해하지 않는다고 확인된 때에는 정상적인 관리업무를 수행하고 유보된 분배금을 위탁자에게 분배.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">6</div><h2>제9조~제12조 비용 부담·위탁자 통지의무·수탁자 통지의무·자료열람</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge am">제9조 비용 부담</span><div>위탁자 부담 비용: ①저작권 등록업무 실비 ②신탁계약 종료 업무수속 비용 ③신탁저작권에 직접 부과되는 세금·공과금 ④위탁자 관련 소송에 수탁자가 대응하여 발생한 비용. 수탁자는 위 비용을 사용료 분배금에서 미리 공제 가능.</div></div>
+<div class="art-row"><span class="art-badge am">제10조 위탁자 통지의무</span><div>
+① 신탁계약 체결 시: 저작권이 없거나 행사에 제한이 있는 경우 통지<br>
+② 신탁기간 중: 신탁저작권 행사에 지장을 초래할 수 있는 사유 발생 시 <b>미리</b> 통지<br>
+③ 신탁저작권·사용료 분배청구권 양도 또는 담보 제공 시: 사전(양도·담보) 또는 지체 없이(분배청구권) 통지<br>
+④ 이름·명칭·주소·대표자 변경, 신탁저작물·신탁저작권 종류·범위 등에 영향을 미치는 사유 발생 시: 지체 없이 통지<br>
+⑤ 위 의무를 소홀히 하여 발생하는 손해는 <b>모두 위탁자 부담</b>
+</div></div>
+<div class="art-row"><span class="art-badge bl">제11조 수탁자 통지의무</span><div>수탁자는 정기적으로 뉴스저작물의 이용 상황·사용료 산정내역·징수현황 등을 위탁자에게 통지. 수탁자는 위탁자에게 <b>인터넷홈페이지 로그인 ID를 부여</b>하고 이용 상황·산정내역·징수현황 등을 열람할 수 있도록 함으로써 제1항의 통지를 갈음 가능.</div></div>
+<div class="art-row"><span class="art-badge bl">제12조 위탁자의 자료열람·제출청구권</span><div>위탁자는 수탁자에게 이용 상황·사용료 산정내역·징수현황·회계서류 등 자료의 열람 또는 제출을 청구 가능. 수탁자는 성실하게 따라야 함.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">7</div><h2>제13조~제19조 권리의무 승계·계약 해지·이전 협의·재판관할·계약기간·약관 변경·부속계약</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제13조 권리의무 승계</span><div>개인 위탁자 사망 또는 법인 위탁자 합병·영업양도 등의 경우 상속인 또는 신탁저작권을 승계하는 법인은 본 계약에 의한 권리의무를 승계 가능. 승계자는 권리의무를 승계한 사실을 지체 없이 수탁자에게 통지.</div></div>
+<div class="art-row"><span class="art-badge rd">제14조 계약의 해지</span><div>
+<b>수탁자의 해지 가능 사유</b>: ①위탁자가 신탁저작권의 전부를 상실한 경우 ②위탁자가 관련 법령이나 본 계약 의무를 위반하고 시정요구에도 불구하고 이를 시정하지 아니하여 신탁계약관계를 유지하기 어려운 경우<br>
+<b>위탁자의 해지 가능 사유</b>: ①수탁자가 신탁관리에 따른 제반 의무를 제대로 이행하지 아니하는 경우 ②위탁자에게 발생한 부득이한 사유로 더 이상 신탁계약관계를 계속 유지할 수 없는 경우<br>
+③ 해지는 문서로 하며, 해지의 효력은 상대방이 해지 통보를 받은 후 <b>6개월이 경과한 때</b> 발생.<br>
+④ 계약 해지 시 수탁자는 해지 효력 발생 후 <b>6개월 이내</b>에 사용료 미분배분 및 결산서를 위탁자에게 지급·제출.<br>
+⑤ 해지는 해지 통지 이전에 수탁자로부터 이용허락을 받은 이용자의 이용권·이용기간에 영향 없음.
+</div></div>
+<div class="art-row"><span class="art-badge bl">제15조</span><div>본 계약 이전에 체결된 양해각서(MOU)·신탁계약·대리중개 계약은 모두 본 계약으로 대치. 내용 상이한 경우 본 계약 우선.</div></div>
+<div class="art-row"><span class="art-badge bl">제16조 재판관할</span><div>분쟁 발생 시 우선 <b>한국저작권위원회의 조정 절차</b>를 통하여 해결. 조정 불성립 시 <b>서울중앙지방법원</b>을 관할법원으로 한다.</div></div>
+<div class="art-row"><span class="art-badge bl">제17조 계약기간</span><div>본 계약의 기간은 <b>3년</b>으로 하고, 위탁자가 계약기간 만료 <b>1개월 전까지 서면</b>에 의하여 계약종료의 의사표시를 하지 아니하면 <b>3년씩 자동으로 연장</b>.</div></div>
+<div class="art-row"><span class="art-badge am">제18조 약관 변경</span><div>수탁자는 이 약관을 개정하고자 할 때 '뉴스저작권신탁운영위원회' 의결을 거쳐 문화관광부장관의 승인 필요. 개정 시 지체 없이 위탁자에게 통지하며 공고. 위탁자가 개정 약관에 동의하지 않을 경우 공고일로부터 <b>3개월 이내</b>에 신탁계약을 해지 가능. 기간 내 해지하지 않으면 개정 약관에 의해 신탁계약이 체결된 것으로 봄.</div></div>
+<div class="art-row"><span class="art-badge bl">제19조 부속계약</span><div>본 계약서 내용에 관하여 별도로 합의한 내용이 있는 경우 부속계약서를 작성하고 서명날인하여 본 계약서 말미에 첨부. 부속계약서는 본 계약서와 동일한 효력.</div></div>
+</div>
+
+</div>
+</div><div class="page" id="p08Page">
+<div class="hero">
+  <div class="hero-chip">📊 문서 08</div>
+  <h1>뉴스저작물 관리수수료규정</h1>
+  <p>한국언론진흥재단이 신탁저작권 관리 대가로 위탁자(언론사)로부터 지급받는 수수료 규정 | 4개 조문</p>
+</div>
+<div class="content">
+
+<div class="sec-t"><div class="n">1</div><h2>제1조 (목적)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">목적</span><div>이 규정은 한국언론진흥재단(이하 '재단'이라 한다)이 신탁 받은 뉴스저작물에 관한 저작권(이하 '신탁저작권'이라 한다)을 관리함에 있어서 신탁저작권을 재단에게 신탁한 자(이하 '위탁자'라고 한다)로부터 지급받을 수수료(이하 '관리수수료'라 한다)를 정함에 그 목적이 있다.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">2</div><h2>제2조 (관리수수료)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge am">①</span><div>위탁자가 재단에게 지급하는 관리수수료는 뉴스저작물의 이용자(재단과 뉴스저작물 이용계약을 체결하는 자)로부터 징수하는 사용료의 <b>15% 이내</b>로 하고, 구체적인 관리수수료율은 위탁자와 재단이 협의하여 정하되, 위탁자와 재단은 구체적인 관리수수료율의 결정에 관하여 이를 <b>뉴스저작권운영위원회에 위임</b>할 수 있다.</div></div>
+<div class="art-row"><span class="art-badge rd">②</span><div>뉴스저작물 불법이용 및 유통 단속활동으로 얻어진 손해배상금의 경우 관리수수료는 <b>민·형사상의 소송비용을 공제한 금액의 15% 이내</b>로 한다.</div></div>
+<div class="art-row"><span class="art-badge bl">③</span><div>제1항의 관리수수료율은 뉴스저작물의 <b>이용형태별로 구분</b>하여 정할 수 있다.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">3</div><h2>제3조 (관리수수료의 공제시기)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge am">공제 시기</span><div>관리수수료는 <b>사용료 분배 시 공제</b>한다.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">4</div><h2>제4조 (규정의 개정) · 부칙</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제4조 개정</span><div>이 규정을 개정하고자 할 때에는 <b>뉴스저작권운영위원회의 의결</b>을 거쳐 <b>문화체육관광부장관의 승인</b>을 얻어야 한다.</div></div>
+<div class="art-row"><span class="art-badge gr">부칙 시행일</span><div>이 규정은 문화체육관광부장관의 승인을 받은 날부터 시행한다.</div></div>
+</div>
+
+</div>
+</div><div class="page" id="p09Page">
+<div class="hero">
+  <div class="hero-chip">📤 문서 09</div>
+  <h1>뉴스저작물 사용료 분배 규정</h1>
+  <p>이용자로부터 징수한 사용료를 위탁자(언론사)에게 분배하는 방법·시기·절차 규정 | 8개 조문</p>
+</div>
+<div class="content">
+
+<div class="sec-t"><div class="n">1</div><h2>제1조 (목적)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">목적</span><div>이 규정은 한국언론진흥재단(이하 '재단'이라 한다)이 신탁관리하고 있는 뉴스저작물의 이용자(재단과 뉴스저작물 이용계약을 체결하는 자)로부터 징수하는 사용료의 <b>분배에 관한 내용</b>을 정함에 그 목적이 있다.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">2</div><h2>제2조 (용어의 정의)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">1. 위탁자</span><div>뉴스저작권신탁계약에 따라 뉴스저작물에 관한 저작권을 재단에 신탁한 자를 말한다.</div></div>
+<div class="art-row"><span class="art-badge rd">2. 과거사용료</span><div>권리 침해에 대한 <b>배상금 및 합의금</b> 등 소송 및 이에 준하는 법률행위를 통하여 <b>미계약 상태에서 발생한 침해행위에 대한 배상 명목</b>으로 발생한 금원 및 금원으로 환가할 수 있는 것을 말한다.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">3</div><h2>제3조 (분배대상자)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">①</span><div>위탁자 또는 그 권리를 승계한 자를 분배대상자로 한다.</div></div>
+<div class="art-row"><span class="art-badge am">②</span><div>과거사용료는 <b>침해시점을 기준</b>으로 제1항에 따른 분배대상 지위를 보유하고 있는 자에게 분배한다.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">4</div><h2>제4조 (사용료의 분배)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">①</span><div>사용료의 분배는 이용자가 제출한 <b>사용료정산내역서</b> 기타 사용료 산정에 필요한 자료에 기초하여 분배.</div></div>
+<div class="art-row"><span class="art-badge am">②</span><div>재단은 이용자로부터 <b>월별로 사용료를 징수</b>하여 위 사용료에서 뉴스저작권관리수수료규정에 따른 <b>관리수수료를 공제</b>한 나머지 금액을 위탁자에게 사용료분배금으로 지급.</div></div>
+<div class="art-row"><span class="art-badge am">③</span><div>지급 시기는 <b>징수한 달의 말일로부터 3개월 이내</b>. 저작물사용료 수입에서 이자가 발생할 경우에는 뉴스저작권운영위원회에서 사용방법을 별도로 정하고, 이자의 사용에 대해서는 사후 <b>문화체육부장관에게 보고</b>.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">5</div><h2>제5조 (외국에서 징수하는 사용료 등의 분배)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge pu">①</span><div>제4조에도 불구하고, 외국에서 징수하는 사용료, 뉴스저작물사용료징수규정 제14조에 따라 징수한 사용료에 관하여는 <b>뉴스저작권운영위원회에서 그 분배방법과 분배시기를 정</b>한다.</div></div>
+<div class="art-row"><span class="art-badge pu">②</span><div>뉴스저작권운영위원회는 제1항에 따라 분배방법과 분배시기를 정함에 있어서 위탁자에 대한 <b>공정한 분배</b>가 이루어지도록 노력하여야 한다.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">6</div><h2>제6조 (이의신청)</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">①</span><div>위탁자는 뉴스저작물의 사용료분배금 등에 대하여 이의가 있는 경우 당해 뉴스저작물이 이용된 때로부터 <b>1년 이내</b>에 뉴스저작권운영위원회에 이의신청을 할 수 있다.</div></div>
+<div class="art-row"><span class="art-badge am">②</span><div>위탁자는 이의신청을 하고자 할 경우 <b>재단이 정한 양식에 관련 자료를 첨부</b>하여 재단에 제출하여야 한다.</div></div>
+<div class="art-row"><span class="art-badge gr">③</span><div>뉴스저작권운영위원회는 이의신청을 접수한 후 <b>3개월 이내</b>에 그 심사결과에 대하여 이의신청인에게 통지하여야 한다.</div></div>
+</div>
+
+<div class="sec-t" style="margin-top:20px;"><div class="n">7</div><h2>제7조~제8조 규정 개정·시행세칙·부칙</h2></div>
+<div class="art-block">
+<div class="art-row"><span class="art-badge bl">제7조 규정의 개정</span><div>이 규정을 개정하고자 할 때에는 <b>뉴스저작권운영위원회의 의결</b>을 거쳐 <b>문화체육관광부장관의 승인</b>을 얻어야 한다.</div></div>
+<div class="art-row"><span class="art-badge bl">제8조 시행세칙</span><div>이 규정의 시행과 관련하여 필요한 사항은 뉴스저작권운영위원회의 의결을 거쳐 <b>세칙</b>으로 정한다.</div></div>
+<div class="art-row"><span class="art-badge gr">부칙 시행일</span><div>이 규정은 문화체육관광부장관의 승인을 받은 날부터 시행한다.</div></div>
+</div>
+
+</div>
+</div>
+<div class="stbar">
+  <span>📂 프로젝트 첨부 문서 10종 전체 수록</span>
+  <span>📅 2025.10 기준</span>
+  <span>⚖️ 저작권법 시행령 대통령령 제32528호</span>
+  <span>☎️ 한국언론진흥재단 02-2001-7791~8</span>
+</div>
+</main>
+</div>
+
+<div class="ovl" id="termsModal" onclick="if(event.target===this)closeTerms()">
+  <div class="modal">
+    <button class="modal-x" onclick="closeTerms()">✕</button>
+    <h2>📚 주요 용어 사전</h2>
+    <dl>
+      <div class="term"><dt>뉴스저작물</dt><dd>시사보도·여론형성·정보전파 등을 목적으로 표현한 저작물. 어문·사진·영상·음악·미술·도형저작물 포함.</dd></div>
+      <div class="term"><dt>신탁관리기관(수탁자)</dt><dd>저작권법 제105조에 따라 문화체육관광부장관 허가를 받아 저작권을 집중 관리하는 기관. 뉴스저작물은 한국언론진흥재단.</dd></div>
+      <div class="term"><dt>위탁자</dt><dd>뉴스저작권신탁계약에 따라 복제권·전송권을 재단에 신탁한 언론사.</dd></div>
+      <div class="term"><dt>이용자</dt><dd>재단에서 관리하는 뉴스저작물을 복제·전송의 방법으로 이용하고자 하는 자. 재단과 이용계약 체결 필수.</dd></div>
+      <div class="term"><dt>소비자</dt><dd>이용자로부터 뉴스저작물 및 관련 서비스를 제공받아 이용하는 자.</dd></div>
+      <div class="term"><dt>이용자 매출액</dt><dd>이용자가 소비자에게 뉴스저작물 및 관련 서비스를 제공하고 수령한 금액. 사용료 산정 기준.</dd></div>
+      <div class="term"><dt>관리수수료</dt><dd>재단이 신탁저작권을 관리하는 대가로 위탁자로부터 공제하는 수수료. 사용료의 15% 이내.</dd></div>
+      <div class="term"><dt>과거사용료</dt><dd>저작권 침해에 대한 배상금·합의금 등. 미계약 상태에서 발생한 침해행위에 대한 배상 명목의 금원.</dd></div>
+      <div class="term"><dt>내부라이선스</dt><dd>기관 내부 전산망·모바일에 한해 뉴스를 복제·전송·배포할 수 있는 스크랩 상품. 외부 홍보 불가.</dd></div>
+      <div class="term"><dt>통합라이선스</dt><dd>내부라이선스에 홈페이지 게시·대외발송 서비스를 추가하여 내·외부 모두 이용 가능한 상품.</dd></div>
+      <div class="term"><dt>뉴스저작권운영위원회</dt><dd>재단이 운영하는 위원회. 관리수수료율 결정, 이의신청 심사, 이자 사용방법 결정, 외국 사용료 분배방법 결정 등.</dd></div>
+      <div class="term"><dt>비율계수</dt><dd>뉴스저작물 중 일부만 복제·전송하는 경우 전체 기사량 대비 복제·전송 비율. 과거기사: 실제비율, 현재·미래: 직전연도 기준.</dd></div>
+      <div class="term"><dt>가산금</dt><dd>계약서 규정 범위 외 이용, 계약서 미제출, 무단 해외 서비스 등의 경우 미납 사용료 외 별도 납부 금액(10~20%).</dd></div>
+    </dl>
+  </div>
+</div>
+
+<script>
+function sp(id,el){
+  document.querySelectorAll(".main > .page").forEach(p=>p.classList.remove("on"));
+  const t=document.getElementById(id+"Page");
+  if(t)t.classList.add("on");
+  document.querySelectorAll(".nv").forEach(n=>n.classList.remove("on"));
+  if(el)el.classList.add("on");
+  document.getElementById("mainArea").scrollTo({top:0,behavior:"smooth"});
+}
+function openTerms(){document.getElementById("termsModal").classList.add("on");}
+function closeTerms(){document.getElementById("termsModal").classList.remove("on");}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeTerms();});
+</script>
+</body>
+</html>
